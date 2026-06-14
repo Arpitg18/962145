@@ -28,9 +28,9 @@ export default function Dashboard({
           <span className="score-badge">{participant.name.split(' ')[0]} ⭐ {myScore}</span>
           <span className="score-badge team">{group?.emoji} {teamScore}</span>
         </div>
-        <span className="text-muted text-sm" style={{ fontSize: '0.75rem' }}>
-          {participant.name.split(' ')[0]}
-        </span>
+        <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={onLogout}>
+          Logout
+        </button>
       </div>
 
       {/* Section + Day bar */}
