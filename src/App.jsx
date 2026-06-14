@@ -3,103 +3,99 @@ import './styles/theme.css'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import { assignVideosToParticipants, PARTICIPANTS } from './gameConfig'
+import { db, signInAnon } from './firebase'
+import {
+  doc, getDoc, setDoc, updateDoc, onSnapshot, increment
+} from 'firebase/firestore'
 
-// ── Storage helpers (localStorage until Firebase is wired up) ───────────────
-const STORAGE_KEY = 'jk_game_state'
-
-function loadLocalState() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
-  } catch {
-    return null
-  }
-}
-
-function saveLocalState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-}
-
-function getInitialGameData(participantId) {
-  const all = loadLocalState() || {}
-  return all[participantId] || {
-    myScore: 0,
-    teamScore: 0,
-    completedRounds: [],
-    currentRound: 1,
-  }
-}
-
-function saveAnswerLocally(participantId, groupId, roundNum, answerData) {
-  const all = loadLocalState() || {}
-
-  // Update this participant's score
-  if (!all[participantId]) {
-    all[participantId] = { myScore: 0, teamScore: 0, completedRounds: [], currentRound: 1 }
-  }
-  all[participantId].myScore = (all[participantId].myScore || 0) + answerData.points
-  if (!all[participantId].completedRounds.includes(roundNum)) {
-    all[participantId].completedRounds.push(roundNum)
-  }
-
-  // Recompute team score from all members of this group
-  const groupMembers = PARTICIPANTS.filter(p => p.groupId === groupId)
-  let teamTotal = 0
-  groupMembers.forEach(m => {
-    teamTotal += all[m.id]?.myScore || 0
-  })
-  // Write team score back to all members
-  groupMembers.forEach(m => {
-    if (all[m.id]) all[m.id].teamScore = teamTotal
-  })
-  all[participantId].teamScore = teamTotal
-
-  saveLocalState(all)
-  return all[participantId]
-}
-
-// Pre-compute video assignments once
+// Pre-compute video assignments once at startup
 const VIDEO_ASSIGNMENTS = assignVideosToParticipants()
+
+// ── Firestore helpers ──────────────────────────────────────────────────────
+
+async function loadParticipantData(participantId) {
+  const ref = doc(db, 'participants', participantId)
+  const snap = await getDoc(ref)
+  if (snap.exists()) return snap.data()
+  // First time — initialise the doc
+  const initial = { myScore: 0, completedRounds: [], currentRound: 1 }
+  await setDoc(ref, initial)
+  return initial
+}
+
+async function submitAnswer(participantId, groupId, roundNum, answerData) {
+  const participantRef = doc(db, 'participants', participantId)
+  const groupRef = doc(db, 'groups', groupId)
+
+  // Save answer details
+  await setDoc(
+    doc(db, 'answers', `${participantId}_R${roundNum}`),
+    { participantId, groupId, roundNum, ...answerData, submittedAt: new Date() }
+  )
+
+  // Update participant score
+  await updateDoc(participantRef, {
+    myScore: increment(answerData.points),
+    completedRounds: (await getDoc(participantRef)).data().completedRounds.concat(roundNum),
+  })
+
+  // Update group team score
+  const groupSnap = await getDoc(groupRef)
+  if (groupSnap.exists()) {
+    await updateDoc(groupRef, { teamScore: increment(answerData.points) })
+  } else {
+    await setDoc(groupRef, { teamScore: answerData.points, groupId })
+  }
+}
+
+// ── App ────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [participant, setParticipant] = useState(null)
   const [gameState, setGameState] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  // Restore session from localStorage
+  // Sign in anonymously on mount + restore session
   useEffect(() => {
-    const saved = localStorage.getItem('jk_current_user')
-    if (saved) {
-      const p = JSON.parse(saved)
-      setParticipant(p)
-      const data = getInitialGameData(p.id)
-      setGameState({
-        ...data,
-        videoAssignment: VIDEO_ASSIGNMENTS[p.id],
-      })
-    }
+    signInAnon().then(async () => {
+      const saved = localStorage.getItem('jk_current_user')
+      if (saved) {
+        const p = JSON.parse(saved)
+        setParticipant(p)
+        const data = await loadParticipantData(p.id)
+        setGameState({ ...data, videoAssignment: VIDEO_ASSIGNMENTS[p.id] })
+      }
+      setLoading(false)
+    })
   }, [])
 
-  const handleLogin = (p) => {
+  // Live-sync team score from Firestore whenever participant is set
+  useEffect(() => {
+    if (!participant) return
+    const groupRef = doc(db, 'groups', participant.groupId)
+    const unsub = onSnapshot(groupRef, (snap) => {
+      if (snap.exists()) {
+        setGameState(prev => prev ? { ...prev, teamScore: snap.data().teamScore } : prev)
+      }
+    })
+    return () => unsub()
+  }, [participant])
+
+  const handleLogin = async (p) => {
     localStorage.setItem('jk_current_user', JSON.stringify(p))
     setParticipant(p)
-    const data = getInitialGameData(p.id)
-    setGameState({
-      ...data,
-      videoAssignment: VIDEO_ASSIGNMENTS[p.id],
-    })
+    const data = await loadParticipantData(p.id)
+    setGameState({ ...data, videoAssignment: VIDEO_ASSIGNMENTS[p.id] })
   }
 
-  const handleAnswerSubmit = (answerData) => {
-    const updated = saveAnswerLocally(
-      participant.id,
-      participant.groupId,
-      gameState.currentRound,
-      answerData
-    )
+  const handleAnswerSubmit = async (answerData) => {
+    const round = gameState.currentRound
+    await submitAnswer(participant.id, participant.groupId, round, answerData)
+    // Update local state immediately; team score updates via onSnapshot
     setGameState(prev => ({
       ...prev,
-      myScore: updated.myScore,
-      teamScore: updated.teamScore,
-      completedRounds: updated.completedRounds,
+      myScore: (prev.myScore || 0) + answerData.points,
+      completedRounds: [...(prev.completedRounds || []), round],
     }))
   }
 
@@ -107,6 +103,17 @@ export default function App() {
     localStorage.removeItem('jk_current_user')
     setParticipant(null)
     setGameState(null)
+  }
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="loader" />
+        <p className="text-muted mt-16" style={{ textAlign: 'center' }}>
+          🦚 Loading…
+        </p>
+      </div>
+    )
   }
 
   if (!participant || !gameState) {

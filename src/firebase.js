@@ -1,18 +1,22 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
-import { getAuth } from 'firebase/auth'
+import { getAuth, signInAnonymously } from 'firebase/auth'
 
-// Replace these with your Firebase project config
-// Go to: Firebase Console → Project Settings → Your apps → Web app → Config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDLshCjr8dj15u7Dj-eyKNHZF0yJ8OMUm8",
+  authDomain: "janmashtami-game.firebaseapp.com",
+  projectId: "janmashtami-game",
+  storageBucket: "janmashtami-game.firebasestorage.app",
+  messagingSenderId: "491144554150",
+  appId: "1:491144554150:web:67b60bef6d1f721aeab667"
 }
 
 const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
 export const auth = getAuth(app)
+
+export async function signInAnon() {
+  if (!auth.currentUser) {
+    await signInAnonymously(auth)
+  }
+}
