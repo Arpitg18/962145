@@ -49,7 +49,7 @@ export default function Dashboard({
 
       {/* Header */}
       <div className="header-bar">
-        <span className="logo">🦚 JK 2026</span>
+        <span className="logo" style={{ fontSize: '0.85rem' }}>🦚 Janmashtami 2026</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span className="score-badge">{participant.name.split(' ')[0]} ⭐ {myScore}</span>
           <span className="score-badge team">{group?.emoji} {teamScore}</span>
@@ -96,27 +96,45 @@ export default function Dashboard({
         {/* ── PLAY TAB ── */}
         {tab === 'play' && (
           <>
-            {!gameState?.isLive && !hasAnsweredToday && (
+            {/* Rest day — no activity scheduled */}
+            {gameState?.restDay && !hasAnsweredToday && (
+              <div className="card card-wide text-center flex-col gap-16">
+                <span style={{ fontSize: '2.5rem' }}>🌸</span>
+                <h3 className="section-heading">No activity today</h3>
+                <p className="text-muted">
+                  The hosts have given everyone a day of rest. 🪈<br />
+                  Enjoy the break and come back tomorrow!
+                </p>
+                <button className="btn-secondary" onClick={() => setTab('score')}>View Scores →</button>
+              </div>
+            )}
+
+            {/* Locked — activity coming but not yet live */}
+            {!gameState?.restDay && !gameState?.isLive && !hasAnsweredToday && (
               <div className="card card-wide text-center flex-col gap-16">
                 <span style={{ fontSize: '2.5rem' }}>🔒</span>
-                <h3 className="section-heading">Today's question is not live yet</h3>
+                <h3 className="section-heading">
+                  {section?.type === 'video' ? "Today's video is not live yet" : "Today's activity is not live yet"}
+                </h3>
                 <p className="text-muted">
-                  The hosts will unlock Day {gameState?.currentDay}'s question shortly.<br />
+                  The hosts will open {section?.emoji} {section?.name} — Day {gameState?.currentDay} shortly.<br />
                   Check your scores while you wait!
                 </p>
                 <button className="btn-secondary" onClick={() => setTab('score')}>View Scores →</button>
               </div>
             )}
 
-            {deadlinePassed && !hasAnsweredToday && (
+            {/* Deadline passed without answering */}
+            {!gameState?.restDay && deadlinePassed && !hasAnsweredToday && (
               <div className="card card-wide text-center flex-col gap-16">
                 <span style={{ fontSize: '2.5rem' }}>⏰</span>
                 <h3 className="section-heading">Time's up!</h3>
-                <p className="text-muted">The deadline for Day {gameState?.currentDay} has passed.</p>
+                <p className="text-muted">The deadline for Day {gameState?.currentDay} has passed.<br />Better luck tomorrow!</p>
               </div>
             )}
 
-            {gameState?.isLive && !deadlinePassed && gameState?.currentSection === 1 && (
+            {/* Section 1 — Video question */}
+            {!gameState?.restDay && gameState?.isLive && !deadlinePassed && gameState?.currentSection === 1 && (
               <VideoQuestion
                 video={currentVideo}
                 question={currentQuestion}
@@ -125,7 +143,8 @@ export default function Dashboard({
               />
             )}
 
-            {gameState?.isLive && !deadlinePassed && gameState?.currentSection > 1 && (
+            {/* Other sections — coming soon */}
+            {!gameState?.restDay && gameState?.isLive && !deadlinePassed && gameState?.currentSection > 1 && (
               <div className="card card-wide text-center flex-col gap-16">
                 <span style={{ fontSize: '2.5rem' }}>{section?.emoji}</span>
                 <h3 className="section-heading">{section?.name}</h3>

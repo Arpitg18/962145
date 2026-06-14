@@ -1,6 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { PARTICIPANTS, GROUPS } from '../gameConfig'
 
+// To use your own Bal Gopal image:
+// 1. Save any image as bal-gopal.jpg inside the /public folder of this project
+// 2. Push to GitHub — Netlify will serve it automatically
+// The URL below is a Wikimedia Commons public-domain painting as the default fallback.
+const BAL_GOPAL_IMAGE = '/bal-gopal.jpg'
+const BAL_GOPAL_FALLBACK = 'https://upload.wikimedia.org/wikipedia/commons/0/07/BalGopal00.jpg'
+
 export default function Login({ onLogin }) {
   const [selectedId, setSelectedId] = useState('')
   const [open, setOpen]             = useState(false)
@@ -35,7 +42,7 @@ export default function Login({ onLogin }) {
         <div className="flex-col gap-8">
           <span className="emoji-large">🦚</span>
           <h1 className="title-krishna">Jay Shri Krishna</h1>
-          <p className="subtitle">🪈 Janmashtami Celebration Quiz 🪈</p>
+          <p className="subtitle">🪈 Janmashtami Celebration 2026 🪈</p>
           <div className="peacock-divider">✦ ✦ ✦</div>
         </div>
 

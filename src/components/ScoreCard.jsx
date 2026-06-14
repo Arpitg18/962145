@@ -9,7 +9,7 @@ export default function ScoreCard({ participant, myScore, teamScore, daysAnswere
 
   async function handleShare() {
     const text =
-      `🦚 Janmashtami Quiz 2026 🦚\n\n` +
+      `🦚 Janmashtami 2026 🦚\n\n` +
       `I am ${participant.name} from Team ${group?.name} ${group?.emoji}\n` +
       `⭐ My Score: ${myScore} pts\n` +
       `🏆 Team Score: ${teamScore} pts\n` +
@@ -17,7 +17,7 @@ export default function ScoreCard({ participant, myScore, teamScore, daysAnswere
       `Jay Shri Krishna! 🪈\njanmashtami-2026.netlify.app`
 
     if (navigator.share) {
-      try { await navigator.share({ title: 'Janmashtami Quiz 2026', text }) } catch {}
+      try { await navigator.share({ title: 'Janmashtami 2026', text }) } catch {}
     } else {
       await navigator.clipboard.writeText(text)
       alert('Score copied to clipboard! Paste it in WhatsApp 🎉')

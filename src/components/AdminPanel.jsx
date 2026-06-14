@@ -207,6 +207,35 @@ export default function AdminPanel({ onLogout }) {
 
             <div className="divider" />
 
+            {/* Rest Day toggle */}
+            <div className="divider" />
+            <div className="flex-col gap-12">
+              <p className="section-heading">🌸 Rest Day</p>
+              <p className="text-muted text-sm">
+                Mark today as a rest day — participants see "No activity today" instead of a locked question.
+                Use when a section round spans multiple days or you're skipping a day.
+              </p>
+              <button
+                onClick={() => save({ restDay: !game?.restDay, isLive: false })}
+                disabled={saving}
+                style={{
+                  padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+                  fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: '0.9rem',
+                  background: game?.restDay
+                    ? 'linear-gradient(135deg,#e65100,#bf360c)'
+                    : 'linear-gradient(135deg,#2e7d32,#1b5e20)',
+                  color: '#fff',
+                }}
+              >
+                {game?.restDay ? '🔓 Exit Rest Day (reopen activity)' : '🌸 Mark as Rest Day'}
+              </button>
+              {game?.restDay && (
+                <p className="text-sm" style={{ color: 'var(--gold)' }}>
+                  🌸 Rest day is active — participants see "No activity today".
+                </p>
+              )}
+            </div>
+
             {/* Announcement */}
             <div className="divider" />
             <div className="flex-col gap-12">
