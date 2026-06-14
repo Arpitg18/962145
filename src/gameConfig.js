@@ -1,65 +1,62 @@
 // ─── PARTICIPANTS & GROUPS ──────────────────────────────────────────────────
-// Add all participants here. groupId must match a key in GROUPS below.
 export const PARTICIPANTS = [
-  // Example entries — replace with real names & group assignments
-  { id: 'p01', name: 'Arpit', groupId: 'G1' },
-  { id: 'p02', name: 'Priya', groupId: 'G1' },
-  { id: 'p03', name: 'Rahul', groupId: 'G1' },
-  { id: 'p04', name: 'Sneha', groupId: 'G1' },
-  { id: 'p05', name: 'Vikram', groupId: 'G1' },
-  { id: 'p06', name: 'Ananya', groupId: 'G1' },
+  // ── Team 1 ──────────────────────────────────────────────────────────────
+  { id: 'p01', name: 'Rinki Goyal',        groupId: 'G1' },
+  { id: 'p02', name: 'Rajni Gupta',        groupId: 'G1' },
+  { id: 'p03', name: 'Monika',             groupId: 'G1' },
+  { id: 'p04', name: 'Girdhari Lal Gupta', groupId: 'G1' },
+  { id: 'p05', name: 'Aarti Amit Kapoor',  groupId: 'G1' },
+  { id: 'p06', name: 'Ratika Garg',        groupId: 'G1' },
 
-  { id: 'p07', name: 'Rohan', groupId: 'G2' },
-  { id: 'p08', name: 'Meera', groupId: 'G2' },
-  { id: 'p09', name: 'Karan', groupId: 'G2' },
-  { id: 'p10', name: 'Divya', groupId: 'G2' },
-  { id: 'p11', name: 'Aditya', groupId: 'G2' },
-  { id: 'p12', name: 'Pooja', groupId: 'G2' },
+  // ── Team 2 ──────────────────────────────────────────────────────────────
+  { id: 'p07', name: 'Poonam Gupta',  groupId: 'G2' },
+  { id: 'p08', name: 'Shreya Goyal',  groupId: 'G2' },
+  { id: 'p09', name: 'Rishu Gupta',   groupId: 'G2' },
+  { id: 'p10', name: 'Nandan',        groupId: 'G2' },
+  { id: 'p11', name: 'Anjalee',       groupId: 'G2' },
+  { id: 'p12', name: 'Vijaya',        groupId: 'G2' },
 
-  { id: 'p13', name: 'Nikhil', groupId: 'G3' },
-  { id: 'p14', name: 'Simran', groupId: 'G3' },
-  { id: 'p15', name: 'Amit', groupId: 'G3' },
-  { id: 'p16', name: 'Kavya', groupId: 'G3' },
-  { id: 'p17', name: 'Saurabh', groupId: 'G3' },
-  { id: 'p18', name: 'Riya', groupId: 'G3' },
+  // ── Team 3 ──────────────────────────────────────────────────────────────
+  { id: 'p13', name: 'Nishtha',       groupId: 'G3' },
+  { id: 'p14', name: 'Pratyush Gupta',groupId: 'G3' },
+  { id: 'p15', name: 'Twinkle Kansal',groupId: 'G3' },
+  { id: 'p16', name: 'Richa',         groupId: 'G3' },
+  { id: 'p17', name: 'Anju Sethi',    groupId: 'G3' },
+  { id: 'p18', name: 'Reena Sharma',  groupId: 'G3' },
 
-  { id: 'p19', name: 'Dev', groupId: 'G4' },
-  { id: 'p20', name: 'Tanvi', groupId: 'G4' },
-  { id: 'p21', name: 'Harsh', groupId: 'G4' },
-  { id: 'p22', name: 'Nidhi', groupId: 'G4' },
-  { id: 'p23', name: 'Yash', groupId: 'G4' },
-  { id: 'p24', name: 'Isha', groupId: 'G4' },
+  // ── Team 4 ──────────────────────────────────────────────────────────────
+  { id: 'p19', name: 'Arpit',           groupId: 'G4' },
+  { id: 'p20', name: 'Sangeeta Kansal', groupId: 'G4' },
+  { id: 'p21', name: 'Kritika',         groupId: 'G4' },
+  { id: 'p22', name: 'Prachi Gupta',    groupId: 'G4' },
+  { id: 'p23', name: 'Akshita Neham',   groupId: 'G4' },
+  { id: 'p24', name: 'TBD',             groupId: 'G4' }, // ← replace name when confirmed
 
-  { id: 'p25', name: 'Vivek', groupId: 'G5' },
-  { id: 'p26', name: 'Ritika', groupId: 'G5' },
-  { id: 'p27', name: 'Shubham', groupId: 'G5' },
-  { id: 'p28', name: 'Ankita', groupId: 'G5' },
-  { id: 'p29', name: 'Gaurav', groupId: 'G5' },
-  { id: 'p30', name: 'Deepika', groupId: 'G5' },
+  // ── Team 5 ──────────────────────────────────────────────────────────────
+  { id: 'p25', name: 'Neenu Gupta',     groupId: 'G5' },
+  { id: 'p26', name: 'Kheyati Abhi',    groupId: 'G5' },
+  { id: 'p27', name: 'Tanupam',         groupId: 'G5' },
+  { id: 'p28', name: 'Sarita Tayal',    groupId: 'G5' },
+  { id: 'p29', name: 'Sonia Aggarwal',  groupId: 'G5' },
+  { id: 'p30', name: 'Manju Gupta (T5)',groupId: 'G5' }, // distinguished from Team6
 
-  { id: 'p31', name: 'Mohit', groupId: 'G6' },
-  { id: 'p32', name: 'Sakshi', groupId: 'G6' },
-  { id: 'p33', name: 'Rajesh', groupId: 'G6' },
-  { id: 'p34', name: 'Neha', groupId: 'G6' },
-  { id: 'p35', name: 'Kunal', groupId: 'G6' },
-  { id: 'p36', name: 'Shruti', groupId: 'G6' },
-
-  { id: 'p37', name: 'Abhinav', groupId: 'G7' },
-  { id: 'p38', name: 'Pallavi', groupId: 'G7' },
-  { id: 'p39', name: 'Sumit', groupId: 'G7' },
-  { id: 'p40', name: 'Jyoti', groupId: 'G7' },
-  { id: 'p41', name: 'Kartik', groupId: 'G7' },
-  { id: 'p42', name: 'Swati', groupId: 'G7' },
+  // ── Team 6 — 7 members ──────────────────────────────────────────────────
+  { id: 'p31', name: 'Chadrika',         groupId: 'G6' },
+  { id: 'p32', name: 'Sanchit',          groupId: 'G6' },
+  { id: 'p33', name: 'Devansh Gupta',    groupId: 'G6' },
+  { id: 'p34', name: 'Pooja R Khanna',   groupId: 'G6' },
+  { id: 'p35', name: 'Manju Gupta (T6)', groupId: 'G6' }, // distinguished from Team5
+  { id: 'p36', name: 'Jayanthi',         groupId: 'G6' },
+  { id: 'p37', name: 'Sarika',           groupId: 'G6' },
 ]
 
 export const GROUPS = {
-  G1: { name: 'Gopas', emoji: '🦚' },
-  G2: { name: 'Gopis', emoji: '🌸' },
-  G3: { name: 'Sudarshanas', emoji: '🔵' },
-  G4: { name: 'Mathuras', emoji: '🪈' },
-  G5: { name: 'Vrindavanas', emoji: '🌿' },
-  G6: { name: 'Dwarkas', emoji: '⚡' },
-  G7: { name: 'Panchalas', emoji: '🎯' },
+  G1: { name: 'Team 1', emoji: '🦚' },
+  G2: { name: 'Team 2', emoji: '🌸' },
+  G3: { name: 'Team 3', emoji: '🪈' },
+  G4: { name: 'Team 4', emoji: '🌿' },
+  G5: { name: 'Team 5', emoji: '⚡' },
+  G6: { name: 'Team 6', emoji: '🎯' },
 }
 
 // ─── ROUND 1 — VIDEO QUESTIONS ──────────────────────────────────────────────
