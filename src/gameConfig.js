@@ -38,14 +38,14 @@ export const PARTICIPANTS = [
   { id: 'p27', name: 'Tanupam',         groupId: 'G5' },
   { id: 'p28', name: 'Sarita Tayal',    groupId: 'G5' },
   { id: 'p29', name: 'Sonia Aggarwal',  groupId: 'G5' },
-  { id: 'p30', name: 'Manju Gupta (T5)',groupId: 'G5' }, // distinguished from Team6
+  { id: 'p30', name: 'Manju Gupta',     groupId: 'G5' },
 
   // ── Team 6 — 7 members ──────────────────────────────────────────────────
   { id: 'p31', name: 'Chadrika',         groupId: 'G6' },
   { id: 'p32', name: 'Sanchit',          groupId: 'G6' },
   { id: 'p33', name: 'Devansh Gupta',    groupId: 'G6' },
   { id: 'p34', name: 'Pooja R Khanna',   groupId: 'G6' },
-  { id: 'p35', name: 'Manju Gupta (T6)', groupId: 'G6' }, // distinguished from Team5
+  { id: 'p35', name: 'Suman',             groupId: 'G6' },
   { id: 'p36', name: 'Jayanthi',         groupId: 'G6' },
   { id: 'p37', name: 'Sarika',           groupId: 'G6' },
 ]
