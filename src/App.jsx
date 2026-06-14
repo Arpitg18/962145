@@ -46,22 +46,35 @@ async function loadParticipantData(participantId) {
   return initial
 }
 
-async function submitAnswer(participantId, groupId, section, day, answerData) {
+async function submitAnswer(participantId, groupId, section, day, answerData, liveAt) {
   const key = `S${section}D${day}`
+  const submittedAt = new Date().toISOString()
+
+  // Response time in seconds from when the quiz went live to when they submitted
+  const responseTimeSecs = liveAt
+    ? Math.round((new Date(submittedAt) - new Date(liveAt)) / 1000)
+    : null
 
   await setDoc(doc(db, 'answers', `${participantId}_${key}`), {
-    participantId, groupId, section, day, key, ...answerData, submittedAt: new Date().toISOString()
+    participantId, groupId, section, day, key,
+    ...answerData, submittedAt, responseTimeSecs,
   })
 
   const participantRef = doc(db, 'participants', participantId)
   const snap = await getDoc(participantRef)
-  const current = snap.exists() ? snap.data() : { myScore: 0, answeredDays: [] }
+  const current = snap.exists() ? snap.data() : { myScore: 0, answeredDays: [], responseTimes: {} }
   const answeredDays = current.answeredDays || []
 
-  await updateDoc(participantRef, {
+  const updateData = {
     myScore: increment(answerData.points),
     answeredDays: [...answeredDays, key],
-  })
+  }
+  // Store response time map: { 'S1D1': 245, 'S1D2': 180, ... }
+  if (responseTimeSecs !== null) {
+    updateData[`responseTimes.${key}`] = responseTimeSecs
+  }
+
+  await updateDoc(participantRef, updateData)
 
   const groupRef = doc(db, 'groups', groupId)
   const gSnap = await getDoc(groupRef)
@@ -159,7 +172,7 @@ export default function App() {
   const handleAnswerSubmit = async (answerData) => {
     if (!gameState) return
     const { currentSection, currentDay } = gameState
-    await submitAnswer(participant.id, participant.groupId, currentSection, currentDay, answerData)
+    await submitAnswer(participant.id, participant.groupId, currentSection, currentDay, answerData, gameState.liveAt)
     const key = `S${currentSection}D${currentDay}`
     setParticipantData(prev => ({
       ...prev,

@@ -20,6 +20,7 @@ export default function AdminPanel({ onLogout }) {
   const [announcement, setAnnouncement]   = useState(null)
   const [announcementDraft, setAnnouncementDraft] = useState('')
   const [participantAnswered, setParticipantAnswered] = useState({})
+  const [individualScores, setIndividualScores] = useState({})
 
   // Schedule tab state
   const [scheduleSection, setScheduleSection] = useState(1)
@@ -59,15 +60,24 @@ export default function AdminPanel({ onLogout }) {
     return () => unsub()
   }, [])
 
-  // Track who has answered today
+  // Track who has answered today + live individual scores/response times
   useEffect(() => {
     if (!game) return
     const key = `S${game.currentSection}D${game.currentDay}`
     const unsubs = PARTICIPANTS.map(p => {
       const ref = doc(db, 'participants', p.id)
       return onSnapshot(ref, snap => {
-        const answered = snap.exists() ? (snap.data().answeredDays || []).includes(key) : false
+        const data = snap.exists() ? snap.data() : {}
+        const answered = (data.answeredDays || []).includes(key)
         setParticipantAnswered(prev => ({ ...prev, [p.id]: answered }))
+        setIndividualScores(prev => ({
+          ...prev,
+          [p.id]: {
+            myScore: data.myScore || 0,
+            answeredDays: data.answeredDays || [],
+            responseTimes: data.responseTimes || {},
+          }
+        }))
       })
     })
     return () => unsubs.forEach(u => u())
@@ -81,7 +91,7 @@ export default function AdminPanel({ onLogout }) {
   }
 
   async function jumpToDay(section, day) {
-    await save({ currentSection: section, currentDay: day, isLive: false, deadline: null })
+    await save({ currentSection: section, currentDay: day, isLive: false, deadline: null, liveAt: null })
   }
 
   async function setDeadline() {
@@ -177,7 +187,7 @@ export default function AdminPanel({ onLogout }) {
                   {game.isLive ? 'Click to lock and stop submissions' : "Click to unlock today's question"}
                 </p>
               </div>
-              <button onClick={() => save({ isLive: !game.isLive })} disabled={saving} style={{
+              <button onClick={() => save({ isLive: !game.isLive, liveAt: !game.isLive ? new Date().toISOString() : game.liveAt })} disabled={saving} style={{
                 padding: '12px 20px', borderRadius: '12px', border: 'none', cursor: 'pointer',
                 fontWeight: 700, fontFamily: 'Poppins, sans-serif', fontSize: '0.9rem',
                 background: game.isLive ? 'linear-gradient(135deg,#f44336,#b71c1c)' : 'linear-gradient(135deg,#4caf50,#1b5e20)',
@@ -297,7 +307,7 @@ export default function AdminPanel({ onLogout }) {
             <div className="divider" />
             <div className="flex-col gap-12">
               <p className="section-heading">👥 Today's Participation</p>
-              <ParticipationTracker answered={participantAnswered} game={game} />
+              <ParticipationTracker answered={participantAnswered} game={game} individualScores={individualScores} />
             </div>
 
             {/* Navigate days — forward AND backward */}
@@ -461,7 +471,7 @@ export default function AdminPanel({ onLogout }) {
 
         {/* ── SCORES TAB ──────────────────────────────────────────────────── */}
         {tab === 'scores' && (
-          <ScoresTab teamScores={teamScores} />
+          <ScoresTab teamScores={teamScores} game={game} />
         )}
 
       </div>
@@ -470,9 +480,9 @@ export default function AdminPanel({ onLogout }) {
 }
 
 // ── Scores tab: team leaderboard + individual breakdown ──────────────────────
-function ScoresTab({ teamScores }) {
+function ScoresTab({ teamScores, game }) {
   const [individualScores, setIndividualScores] = useState({})
-  const [view, setView] = useState('teams') // 'teams' | 'individuals'
+  const [view, setView] = useState('teams') // 'teams' | 'individuals' | 'speed'
   const [expandedGroup, setExpandedGroup] = useState(null)
 
   useEffect(() => {
@@ -485,6 +495,7 @@ function ScoresTab({ teamScores }) {
             [p.id]: {
               myScore: snap.data().myScore || 0,
               answeredDays: snap.data().answeredDays || [],
+              responseTimes: snap.data().responseTimes || {},
             }
           }))
         }
@@ -525,8 +536,9 @@ function ScoresTab({ teamScores }) {
       {/* View toggle */}
       <div style={{ display: 'flex', gap: '8px' }}>
         {[
-          { id: 'teams', label: '🏆 Team Leaderboard' },
-          { id: 'individuals', label: '⭐ Individual Scores' },
+          { id: 'teams',       label: '🏆 Teams'      },
+          { id: 'individuals', label: '⭐ Individual'  },
+          { id: 'speed',       label: '⚡ Speed'       },
         ].map(v => (
           <button key={v.id} onClick={() => setView(v.id)} style={{
             flex: 1, padding: '8px', borderRadius: '8px', border: 'none', cursor: 'pointer',
@@ -627,8 +639,169 @@ function ScoresTab({ teamScores }) {
           ))}
         </div>
       )}
+
+      {/* ── SPEED VIEW ── */}
+      {view === 'speed' && (
+        <SpeedView individualScores={individualScores} game={game} />
+      )}
     </div>
   )
+}
+
+// ── Speed leaderboard ─────────────────────────────────────────────────────────
+function SpeedView({ individualScores, game }) {
+  const [selectedKey, setSelectedKey] = useState(() => {
+    if (!game) return null
+    return `S${game.currentSection}D${game.currentDay}`
+  })
+
+  // Build list of all keys that have at least one response time
+  const allKeys = new Set()
+  PARTICIPANTS.forEach(p => {
+    const rt = individualScores[p.id]?.responseTimes || {}
+    Object.keys(rt).forEach(k => allKeys.add(k))
+  })
+  const keyOptions = [...allKeys].sort()
+
+  const currentKey = selectedKey || (game ? `S${game.currentSection}D${game.currentDay}` : null)
+
+  // Build per-participant speed data for selected key
+  const speedData = PARTICIPANTS
+    .map(p => {
+      const rt = individualScores[p.id]?.responseTimes?.[currentKey]
+      return {
+        ...p,
+        group: GROUPS[p.groupId],
+        responseTimeSecs: rt ?? null,
+        answered: rt !== undefined && rt !== null,
+      }
+    })
+    .filter(p => p.answered)
+    .sort((a, b) => a.responseTimeSecs - b.responseTimeSecs)
+
+  // Team averages (only responders)
+  const teamSpeeds = Object.entries(GROUPS).map(([gId, group]) => {
+    const members = speedData.filter(p => p.groupId === gId)
+    if (members.length === 0) return { gId, group, avg: null, count: 0 }
+    const avg = Math.round(members.reduce((s, p) => s + p.responseTimeSecs, 0) / members.length)
+    return { gId, group, avg, count: members.length }
+  }).filter(t => t.avg !== null).sort((a, b) => a.avg - b.avg)
+
+  const notAnswered = PARTICIPANTS.filter(p => !speedData.find(s => s.id === p.id))
+
+  return (
+    <div className="flex-col gap-16">
+      {/* Day selector */}
+      <div className="flex-col gap-8">
+        <p className="section-heading">⚡ Response Speed</p>
+        <p className="text-muted text-sm">
+          Time from "Go Live" to submission. Team average excludes participants who haven't answered.
+        </p>
+        <select
+          className="input-field"
+          value={currentKey || ''}
+          onChange={e => setSelectedKey(e.target.value)}
+        >
+          {game && <option value={`S${game.currentSection}D${game.currentDay}`}>
+            Today — S{game.currentSection}D{game.currentDay} (current)
+          </option>}
+          {keyOptions.filter(k => k !== `S${game?.currentSection}D${game?.currentDay}`).map(k => (
+            <option key={k} value={k}>{k}</option>
+          ))}
+          {keyOptions.length === 0 && <option disabled>No data yet</option>}
+        </select>
+      </div>
+
+      {/* Team averages */}
+      {teamSpeeds.length > 0 && (
+        <div className="flex-col gap-8">
+          <p style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--gold)' }}>🏆 Team Average Speed</p>
+          {teamSpeeds.map((t, rank) => (
+            <div key={t.gId} style={{
+              display: 'flex', alignItems: 'center', gap: '12px',
+              padding: '10px 14px', borderRadius: '10px',
+              background: rank === 0 ? 'rgba(76,175,80,0.12)' : 'rgba(255,255,255,0.04)',
+              border: rank === 0 ? '1px solid rgba(76,175,80,0.4)' : '1px solid rgba(255,255,255,0.06)',
+            }}>
+              <span style={{ fontSize: '1.1rem', width: '24px', textAlign: 'center' }}>
+                {rank === 0 ? '🥇' : rank === 1 ? '🥈' : rank === 2 ? '🥉' : `#${rank + 1}`}
+              </span>
+              <span style={{ flex: 1, fontWeight: 600, fontSize: '0.88rem' }}>
+                {t.group.emoji} {t.group.name}
+              </span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {t.count} responder{t.count !== 1 ? 's' : ''}
+              </span>
+              <span style={{
+                fontWeight: 700, fontSize: '1rem', minWidth: '60px', textAlign: 'right',
+                color: rank === 0 ? '#a5d6a7' : 'var(--text-primary)',
+              }}>
+                {fmtTime(t.avg)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="divider" />
+
+      {/* Individual speed ranking */}
+      {speedData.length > 0 ? (
+        <div className="flex-col gap-8">
+          <p style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--gold)' }}>
+            ⚡ Individual — {speedData.length} responded
+          </p>
+          {speedData.map((p, rank) => (
+            <div key={p.id} style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '9px 14px', borderRadius: '9px',
+              background: rank === 0 ? 'rgba(76,175,80,0.1)' : 'rgba(255,255,255,0.03)',
+              border: rank < 3 ? '1px solid rgba(76,175,80,0.2)' : '1px solid rgba(255,255,255,0.05)',
+            }}>
+              <span style={{ fontSize: '0.9rem', width: '22px', textAlign: 'center', flexShrink: 0 }}>
+                {rank === 0 ? '🥇' : rank === 1 ? '🥈' : rank === 2 ? '🥉' : <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>#{rank + 1}</span>}
+              </span>
+              <span style={{ flex: 1, fontSize: '0.87rem', fontWeight: rank < 3 ? 700 : 400 }}>{p.name}</span>
+              <span style={{
+                fontSize: '0.7rem', padding: '2px 7px', borderRadius: '20px',
+                background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)',
+              }}>
+                {p.group?.emoji} {p.group?.name}
+              </span>
+              <span style={{
+                fontWeight: 700, fontSize: '0.95rem', minWidth: '55px', textAlign: 'right',
+                color: rank === 0 ? '#a5d6a7' : 'var(--text-primary)',
+              }}>
+                {fmtTime(p.responseTimeSecs)}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-muted text-center text-sm">No response time data for this day yet.</p>
+      )}
+
+      {/* Not yet answered */}
+      {notAnswered.length > 0 && (
+        <div style={{ padding: '10px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
+            ⏳ Not yet answered ({notAnswered.length}):
+          </p>
+          <p style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.35)', lineHeight: 1.7 }}>
+            {notAnswered.map(p => p.name).join(' · ')}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function fmtTime(secs) {
+  if (secs === null || secs === undefined) return '—'
+  if (secs < 60) return `${secs}s`
+  const m = Math.floor(secs / 60)
+  const s = secs % 60
+  return `${m}m ${String(s).padStart(2, '0')}s`
 }
 
 // ── Jump to any day picker ─────────────────────────────────────────────────
@@ -852,12 +1025,15 @@ function exportCSV(individualScores) {
 }
 
 // ── Participation Tracker ─────────────────────────────────────────────────────
-function ParticipationTracker({ answered, game }) {
+function ParticipationTracker({ answered, game, individualScores }) {
   if (!game) return null
   const key = `S${game.currentSection}D${game.currentDay}`
   const total     = PARTICIPANTS.length
   const doneCount = PARTICIPANTS.filter(p => answered[p.id]).length
   const pct       = Math.round((doneCount / total) * 100)
+
+  // Get response time for a participant for today
+  const getRT = (pid) => individualScores?.[pid]?.responseTimes?.[key] ?? null
 
   return (
     <div className="flex-col gap-12">
@@ -895,16 +1071,23 @@ function ParticipationTracker({ answered, game }) {
               </span>
             </div>
             <div style={{ padding: '6px 8px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-              {members.map(p => (
-                <span key={p.id} style={{
-                  padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 500,
-                  background: answered[p.id] ? 'rgba(76,175,80,0.2)' : 'rgba(244,67,54,0.15)',
-                  border: `1px solid ${answered[p.id] ? 'rgba(76,175,80,0.4)' : 'rgba(244,67,54,0.3)'}`,
-                  color: answered[p.id] ? '#a5d6a7' : '#ef9a9a',
-                }}>
-                  {answered[p.id] ? '✓' : '○'} {p.name}
-                </span>
-              ))}
+              {members.map(p => {
+                const rt = getRT(p.id)
+                return (
+                  <span key={p.id} style={{
+                    padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 500,
+                    background: answered[p.id] ? 'rgba(76,175,80,0.2)' : 'rgba(244,67,54,0.15)',
+                    border: `1px solid ${answered[p.id] ? 'rgba(76,175,80,0.4)' : 'rgba(244,67,54,0.3)'}`,
+                    color: answered[p.id] ? '#a5d6a7' : '#ef9a9a',
+                    display: 'inline-flex', alignItems: 'center', gap: '5px',
+                  }}>
+                    {answered[p.id] ? '✓' : '○'} {p.name}
+                    {rt !== null && (
+                      <span style={{ fontSize: '0.68rem', opacity: 0.75 }}>⚡{fmtTime(rt)}</span>
+                    )}
+                  </span>
+                )
+              })}
             </div>
           </div>
         )
