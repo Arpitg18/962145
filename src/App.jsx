@@ -82,6 +82,7 @@ export default function App() {
   const [teamScore, setTeamScore] = useState(0)
   const [adminPass, setAdminPass] = useState('')
   const [adminError, setAdminError] = useState('')
+  const [resolvedAssignment, setResolvedAssignment] = useState(null)
 
   // Check if URL has #admin
   const isAdminRoute = window.location.hash === '#admin'
@@ -129,6 +130,13 @@ export default function App() {
     })
     return () => unsub()
   }, [participant])
+
+  // Resolve video + question for today (with Firestore overrides)
+  useEffect(() => {
+    if (!gameState || gameState.currentSection !== 1 || !participant) return
+    resolveAssignment(participant.id, gameState.currentSection, gameState.currentDay)
+      .then(setResolvedAssignment)
+  }, [gameState?.currentSection, gameState?.currentDay, participant?.id])
 
   const handleLogin = async (p) => {
     localStorage.setItem('jk_current_user', JSON.stringify(p))
@@ -211,14 +219,6 @@ export default function App() {
   if (mode === 'login' || !participant || !participantData) {
     return <Login onLogin={handleLogin} />
   }
-
-  // Compute today's video + question for Section 1 (with override support)
-  const [resolvedAssignment, setResolvedAssignment] = useState(null)
-  useEffect(() => {
-    if (!gameState || gameState.currentSection !== 1 || !participant) return
-    resolveAssignment(participant.id, gameState.currentSection, gameState.currentDay)
-      .then(setResolvedAssignment)
-  }, [gameState?.currentSection, gameState?.currentDay, participant?.id])
 
   const currentVideo    = resolvedAssignment?.video    ?? null
   const currentQuestion = resolvedAssignment?.question ?? null
