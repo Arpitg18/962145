@@ -2,14 +2,12 @@ import { useState, useEffect } from 'react'
 import './styles/theme.css'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
-import { assignVideosToParticipants, PARTICIPANTS } from './gameConfig'
+import AdminPanel from './components/AdminPanel'
+import { getVideoForDay, PARTICIPANTS, ADMIN_PASSWORD } from './gameConfig'
 import { db, signInAnon } from './firebase'
 import {
   doc, getDoc, setDoc, updateDoc, onSnapshot, increment
 } from 'firebase/firestore'
-
-// Pre-compute video assignments once at startup
-const VIDEO_ASSIGNMENTS = assignVideosToParticipants()
 
 // ── Firestore helpers ──────────────────────────────────────────────────────
 
@@ -17,31 +15,31 @@ async function loadParticipantData(participantId) {
   const ref = doc(db, 'participants', participantId)
   const snap = await getDoc(ref)
   if (snap.exists()) return snap.data()
-  // First time — initialise the doc
-  const initial = { myScore: 0, completedRounds: [], currentRound: 1 }
+  const initial = { myScore: 0, answeredDays: [] }
   await setDoc(ref, initial)
   return initial
 }
 
-async function submitAnswer(participantId, groupId, roundNum, answerData) {
-  const participantRef = doc(db, 'participants', participantId)
-  const groupRef = doc(db, 'groups', groupId)
+async function submitAnswer(participantId, groupId, section, day, answerData) {
+  const key = `S${section}D${day}`
 
-  // Save answer details
-  await setDoc(
-    doc(db, 'answers', `${participantId}_R${roundNum}`),
-    { participantId, groupId, roundNum, ...answerData, submittedAt: new Date() }
-  )
-
-  // Update participant score
-  await updateDoc(participantRef, {
-    myScore: increment(answerData.points),
-    completedRounds: (await getDoc(participantRef)).data().completedRounds.concat(roundNum),
+  await setDoc(doc(db, 'answers', `${participantId}_${key}`), {
+    participantId, groupId, section, day, key, ...answerData, submittedAt: new Date().toISOString()
   })
 
-  // Update group team score
-  const groupSnap = await getDoc(groupRef)
-  if (groupSnap.exists()) {
+  const participantRef = doc(db, 'participants', participantId)
+  const snap = await getDoc(participantRef)
+  const current = snap.exists() ? snap.data() : { myScore: 0, answeredDays: [] }
+  const answeredDays = current.answeredDays || []
+
+  await updateDoc(participantRef, {
+    myScore: increment(answerData.points),
+    answeredDays: [...answeredDays, key],
+  })
+
+  const groupRef = doc(db, 'groups', groupId)
+  const gSnap = await getDoc(groupRef)
+  if (gSnap.exists()) {
     await updateDoc(groupRef, { teamScore: increment(answerData.points) })
   } else {
     await setDoc(groupRef, { teamScore: answerData.points, groupId })
@@ -51,43 +49,57 @@ async function submitAnswer(participantId, groupId, roundNum, answerData) {
 // ── App ────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const [mode, setMode] = useState('loading') // 'loading' | 'login' | 'game' | 'admin' | 'adminLogin'
   const [participant, setParticipant] = useState(null)
-  const [gameState, setGameState] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [participantData, setParticipantData] = useState(null)
+  const [gameState, setGameState] = useState(null)   // from Firestore config/gameState
+  const [teamScore, setTeamScore] = useState(0)
+  const [adminPass, setAdminPass] = useState('')
+  const [adminError, setAdminError] = useState('')
 
-  // Sign in anonymously on mount + restore session
+  // Check if URL has #admin
+  const isAdminRoute = window.location.hash === '#admin'
+
+  // Sign in anonymously + restore session
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      // If Firebase takes more than 6s, proceed without it (graceful degradation)
-      setLoading(false)
-    }, 6000)
+    const timeout = setTimeout(() => setMode(isAdminRoute ? 'adminLogin' : 'login'), 6000)
 
     signInAnon()
       .then(async () => {
         clearTimeout(timeout)
+        if (isAdminRoute) {
+          setMode('adminLogin')
+          return
+        }
         const saved = localStorage.getItem('jk_current_user')
         if (saved) {
           const p = JSON.parse(saved)
           setParticipant(p)
           const data = await loadParticipantData(p.id)
-          setGameState({ ...data, videoAssignment: VIDEO_ASSIGNMENTS[p.id] })
+          setParticipantData(data)
+          setMode('game')
+        } else {
+          setMode('login')
         }
-        setLoading(false)
       })
-      .catch(() => {
-        clearTimeout(timeout)
-        setLoading(false)
-      })
+      .catch(() => { clearTimeout(timeout); setMode(isAdminRoute ? 'adminLogin' : 'login') })
   }, [])
 
-  // Live-sync team score from Firestore whenever participant is set
+  // Listen to global game state (section, day, isLive, deadline)
+  useEffect(() => {
+    const ref = doc(db, 'config', 'gameState')
+    const unsub = onSnapshot(ref, snap => {
+      setGameState(snap.exists() ? snap.data() : { currentSection: 1, currentDay: 1, isLive: false, deadline: null })
+    })
+    return () => unsub()
+  }, [])
+
+  // Listen to team score
   useEffect(() => {
     if (!participant) return
-    const groupRef = doc(db, 'groups', participant.groupId)
-    const unsub = onSnapshot(groupRef, (snap) => {
-      if (snap.exists()) {
-        setGameState(prev => prev ? { ...prev, teamScore: snap.data().teamScore } : prev)
-      }
+    const ref = doc(db, 'groups', participant.groupId)
+    const unsub = onSnapshot(ref, snap => {
+      if (snap.exists()) setTeamScore(snap.data().teamScore || 0)
     })
     return () => unsub()
   }, [participant])
@@ -96,45 +108,100 @@ export default function App() {
     localStorage.setItem('jk_current_user', JSON.stringify(p))
     setParticipant(p)
     const data = await loadParticipantData(p.id)
-    setGameState({ ...data, videoAssignment: VIDEO_ASSIGNMENTS[p.id] })
+    setParticipantData(data)
+    setMode('game')
   }
 
   const handleAnswerSubmit = async (answerData) => {
-    const round = gameState.currentRound
-    await submitAnswer(participant.id, participant.groupId, round, answerData)
-    // Update local state immediately; team score updates via onSnapshot
-    setGameState(prev => ({
+    if (!gameState) return
+    const { currentSection, currentDay } = gameState
+    await submitAnswer(participant.id, participant.groupId, currentSection, currentDay, answerData)
+    const key = `S${currentSection}D${currentDay}`
+    setParticipantData(prev => ({
       ...prev,
       myScore: (prev.myScore || 0) + answerData.points,
-      completedRounds: [...(prev.completedRounds || []), round],
+      answeredDays: [...(prev.answeredDays || []), key],
     }))
   }
 
   const handleLogout = () => {
     localStorage.removeItem('jk_current_user')
     setParticipant(null)
-    setGameState(null)
+    setParticipantData(null)
+    setMode('login')
   }
 
-  if (loading) {
+  const handleAdminLogin = () => {
+    if (adminPass === ADMIN_PASSWORD) {
+      setMode('admin')
+      setAdminError('')
+    } else {
+      setAdminError('Incorrect password. Try again.')
+    }
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────────
+
+  if (mode === 'loading') {
     return (
       <div className="page-container">
         <div className="loader" />
-        <p className="text-muted mt-16" style={{ textAlign: 'center' }}>
-          🦚 Loading…
-        </p>
+        <p className="text-muted mt-16 text-center">🦚 Loading…</p>
       </div>
     )
   }
 
-  if (!participant || !gameState) {
+  if (mode === 'adminLogin') {
+    return (
+      <div className="page-container">
+        <div className="card card-narrow flex-col gap-20">
+          <div className="text-center">
+            <span style={{ fontSize: '2.5rem' }}>🔐</span>
+            <h2 className="title-krishna" style={{ fontSize: '1.6rem', marginTop: '8px' }}>Admin Panel</h2>
+            <p className="text-muted text-sm">Janmashtami 2026</p>
+          </div>
+          <div className="flex-col gap-12">
+            <input
+              type="password"
+              className="input-field"
+              placeholder="Enter admin password"
+              value={adminPass}
+              onChange={e => setAdminPass(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAdminLogin()}
+              autoFocus
+            />
+            {adminError && <p className="text-error text-sm">{adminError}</p>}
+            <button className="btn-primary" onClick={handleAdminLogin}>Enter →</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (mode === 'admin') {
+    return <AdminPanel onLogout={() => { setMode('adminLogin'); setAdminPass('') }} />
+  }
+
+  if (mode === 'login' || !participant || !participantData) {
     return <Login onLogin={handleLogin} />
   }
+
+  // Compute today's video for Section 1
+  const currentVideo = gameState?.currentSection === 1
+    ? getVideoForDay(participant.id, gameState.currentDay)
+    : null
+
+  const currentKey = gameState ? `S${gameState.currentSection}D${gameState.currentDay}` : null
+  const hasAnsweredToday = currentKey ? (participantData.answeredDays || []).includes(currentKey) : false
 
   return (
     <Dashboard
       participant={participant}
       gameState={gameState}
+      myScore={participantData.myScore || 0}
+      teamScore={teamScore}
+      currentVideo={currentVideo}
+      hasAnsweredToday={hasAnsweredToday}
       onAnswerSubmit={handleAnswerSubmit}
       onLogout={handleLogout}
     />

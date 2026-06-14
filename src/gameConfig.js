@@ -294,32 +294,51 @@ export const ROUND1_VIDEOS = [
   },
 ]
 
-// ─── VIDEO ASSIGNMENT ALGORITHM ─────────────────────────────────────────────
-// Assigns videos to participants so:
-// • No two participants in the same group get the same video
-// • Videos are spread as evenly as possible across groups
-// Returns: { participantId: videoId, ... }
-export function assignVideosToParticipants() {
-  const assignment = {}
-  const groupMap = {}
+// ─── GAME STRUCTURE ──────────────────────────────────────────────────────────
+export const TOTAL_SECTIONS = 9
+export const DAYS_PER_SECTION = 9
+export const TOTAL_DAYS = 81  // 9 × 9
 
-  // Group participants by groupId
+export const SECTIONS = [
+  { id: 1, name: 'Krishna Leela Videos', type: 'video', emoji: '🎬' },
+  { id: 2, name: 'Section 2', type: 'tbd', emoji: '🎵' }, // fill in as you go
+  { id: 3, name: 'Section 3', type: 'tbd', emoji: '🎭' },
+  { id: 4, name: 'Section 4', type: 'tbd', emoji: '📖' },
+  { id: 5, name: 'Section 5', type: 'tbd', emoji: '🎨' },
+  { id: 6, name: 'Section 6', type: 'tbd', emoji: '🎶' },
+  { id: 7, name: 'Section 7', type: 'tbd', emoji: '🧩' },
+  { id: 8, name: 'Section 8', type: 'tbd', emoji: '🌟' },
+  { id: 9, name: 'Section 9', type: 'tbd', emoji: '🏆' },
+]
+
+// ─── ADMIN CONFIG ─────────────────────────────────────────────────────────────
+export const ADMIN_PASSWORD = 'krishna2026'  // change this before the event
+
+// ─── VIDEO ASSIGNMENT ALGORITHM ──────────────────────────────────────────────
+// Returns the video for a given participant on a given day (1-9) within Section 1.
+// Guarantees:
+//   • No two teammates see the same video on the same day
+//   • No participant repeats a video across the 9 days
+// Uses a step of 7 (coprime with 18) so each member cycles through 9 unique videos.
+export function getVideoForDay(participantId, dayNumber) {
+  const totalVideos = ROUND1_VIDEOS.length // 18
+
+  // Build ordered member list per group (consistent ordering = consistent assignment)
+  const groupMap = {}
   PARTICIPANTS.forEach(p => {
     if (!groupMap[p.groupId]) groupMap[p.groupId] = []
     groupMap[p.groupId].push(p.id)
   })
 
-  const totalVideos = ROUND1_VIDEOS.length // 18
+  const participant = PARTICIPANTS.find(p => p.id === participantId)
+  if (!participant) return null
 
-  Object.entries(groupMap).forEach(([groupId, memberIds], groupIndex) => {
-    memberIds.forEach((pid, memberIndex) => {
-      // Offset starting video per group to minimize cross-group overlap
-      const videoIndex = (groupIndex * memberIds.length + memberIndex) % totalVideos
-      assignment[pid] = ROUND1_VIDEOS[videoIndex].id
-    })
-  })
+  const members = groupMap[participant.groupId]
+  const memberIndex = members.indexOf(participantId) // 0-based position in team
+  const d = dayNumber - 1                            // 0-based day
 
-  return assignment
+  // Step of 7 between days (coprime with 18 → 18 unique values before repeat)
+  // Step of 2 between members (ensures teammates differ within same day)
+  const videoIndex = (memberIndex * 2 + d * 7) % totalVideos
+  return ROUND1_VIDEOS[videoIndex]
 }
-
-export const TOTAL_ROUNDS = 9
