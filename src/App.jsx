@@ -83,6 +83,7 @@ export default function App() {
   const [adminPass, setAdminPass] = useState('')
   const [adminError, setAdminError] = useState('')
   const [resolvedAssignment, setResolvedAssignment] = useState(null)
+  const [announcement, setAnnouncement] = useState(null)
 
   // Check if URL has #admin
   const isAdminRoute = window.location.hash === '#admin'
@@ -130,6 +131,15 @@ export default function App() {
     })
     return () => unsub()
   }, [participant])
+
+  // Listen to announcement
+  useEffect(() => {
+    const ref = doc(db, 'config', 'announcement')
+    const unsub = onSnapshot(ref, snap => {
+      setAnnouncement(snap.exists() ? snap.data() : null)
+    })
+    return () => unsub()
+  }, [])
 
   // Resolve video + question for today (with Firestore overrides)
   useEffect(() => {
@@ -232,9 +242,11 @@ export default function App() {
       gameState={gameState}
       myScore={participantData.myScore || 0}
       teamScore={teamScore}
+      daysAnswered={(participantData.answeredDays || []).length}
       currentVideo={currentVideo}
       currentQuestion={currentQuestion}
       hasAnsweredToday={hasAnsweredToday}
+      announcement={announcement}
       onAnswerSubmit={handleAnswerSubmit}
       onLogout={handleLogout}
     />

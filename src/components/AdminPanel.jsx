@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { db } from '../firebase'
-import { doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore'
+import { doc, onSnapshot, setDoc, deleteDoc, collection, getDocs } from 'firebase/firestore'
 import { PARTICIPANTS, GROUPS, SECTIONS, TOTAL_SECTIONS, DAYS_PER_SECTION, ROUND1_VIDEOS, getAssignmentForDay } from '../gameConfig'
 import AdminLibrary from './AdminLibrary'
 
@@ -12,11 +12,14 @@ const DEFAULT_STATE = {
 }
 
 export default function AdminPanel({ onLogout }) {
-  const [game, setGame]           = useState(null)
-  const [saving, setSaving]       = useState(false)
-  const [tab, setTab]             = useState('control') // 'control' | 'schedule' | 'preview' | 'library' | 'scores'
+  const [game, setGame]             = useState(null)
+  const [saving, setSaving]         = useState(false)
+  const [tab, setTab]               = useState('control')
   const [teamScores, setTeamScores] = useState({})
   const [deadlineInput, setDeadlineInput] = useState('')
+  const [announcement, setAnnouncement]   = useState(null)
+  const [announcementDraft, setAnnouncementDraft] = useState('')
+  const [participantAnswered, setParticipantAnswered] = useState({})
 
   // Schedule tab state
   const [scheduleSection, setScheduleSection] = useState(1)
@@ -45,6 +48,31 @@ export default function AdminPanel({ onLogout }) {
     return () => unsubs.forEach(u => u())
   }, [])
 
+  // Listen to announcement
+  useEffect(() => {
+    const ref = doc(db, 'config', 'announcement')
+    const unsub = onSnapshot(ref, snap => {
+      const data = snap.exists() ? snap.data() : null
+      setAnnouncement(data)
+      if (data?.message) setAnnouncementDraft(data.message)
+    })
+    return () => unsub()
+  }, [])
+
+  // Track who has answered today
+  useEffect(() => {
+    if (!game) return
+    const key = `S${game.currentSection}D${game.currentDay}`
+    const unsubs = PARTICIPANTS.map(p => {
+      const ref = doc(db, 'participants', p.id)
+      return onSnapshot(ref, snap => {
+        const answered = snap.exists() ? (snap.data().answeredDays || []).includes(key) : false
+        setParticipantAnswered(prev => ({ ...prev, [p.id]: answered }))
+      })
+    })
+    return () => unsubs.forEach(u => u())
+  }, [game?.currentSection, game?.currentDay])
+
   async function save(updates) {
     setSaving(true)
     const ref = doc(db, 'config', 'gameState')
@@ -59,6 +87,23 @@ export default function AdminPanel({ onLogout }) {
   async function setDeadline() {
     if (!deadlineInput) { await save({ deadline: null }); return }
     await save({ deadline: new Date(deadlineInput).toISOString() })
+  }
+
+  async function publishAnnouncement() {
+    await setDoc(doc(db, 'config', 'announcement'), {
+      message: announcementDraft,
+      active: true,
+      updatedAt: new Date().toISOString(),
+    })
+  }
+
+  async function clearAnnouncement() {
+    await setDoc(doc(db, 'config', 'announcement'), { message: '', active: false, updatedAt: new Date().toISOString() })
+    setAnnouncementDraft('')
+  }
+
+  async function toggleCelebration() {
+    await save({ celebrationMode: !game?.celebrationMode })
   }
 
   if (!game) return <div className="page-container"><div className="loader" /></div>
@@ -162,7 +207,72 @@ export default function AdminPanel({ onLogout }) {
 
             <div className="divider" />
 
+            {/* Announcement */}
+            <div className="divider" />
+            <div className="flex-col gap-12">
+              <p className="section-heading">📢 Announcement</p>
+              <p className="text-muted text-sm">Shown as a banner to all participants instantly. Use for congratulations, reminders, hints.</p>
+              <textarea
+                className="input-field"
+                rows={2}
+                placeholder="e.g. 🎉 Congratulations to Team GOVARDHAN for topping Day 3!"
+                value={announcementDraft}
+                onChange={e => setAnnouncementDraft(e.target.value)}
+                style={{ resize: 'vertical', fontFamily: 'Poppins, sans-serif', lineHeight: 1.5 }}
+              />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="btn-primary" onClick={publishAnnouncement}
+                  disabled={!announcementDraft.trim()} style={{ flex: 1, padding: '10px' }}>
+                  📢 Publish
+                </button>
+                {announcement?.active && (
+                  <button className="btn-secondary" onClick={clearAnnouncement}>Clear</button>
+                )}
+              </div>
+              {announcement?.active && (
+                <p className="text-sm" style={{ color: 'var(--success)' }}>
+                  🟢 Live: "{announcement.message}"
+                </p>
+              )}
+            </div>
+
+            {/* Leaderboard Reveal */}
+            <div className="divider" />
+            <div className="flex-col gap-12">
+              <p className="section-heading">🎉 Leaderboard Reveal</p>
+              <p className="text-muted text-sm">
+                Push all participants to a celebration screen showing their scores. Use at section end or any milestone moment.
+              </p>
+              <button
+                onClick={toggleCelebration}
+                disabled={saving}
+                style={{
+                  padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+                  fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: '0.9rem',
+                  background: game?.celebrationMode
+                    ? 'linear-gradient(135deg,#f44336,#b71c1c)'
+                    : 'linear-gradient(135deg,#7b1fa2,#4a148c)',
+                  color: '#fff',
+                }}
+              >
+                {game?.celebrationMode ? '⬇️ Exit Celebration Mode' : '🎉 Launch Leaderboard Reveal'}
+              </button>
+              {game?.celebrationMode && (
+                <p className="text-sm" style={{ color: 'var(--lotus-pink)' }}>
+                  🎊 All participants are seeing the celebration screen right now!
+                </p>
+              )}
+            </div>
+
+            {/* Participation tracker */}
+            <div className="divider" />
+            <div className="flex-col gap-12">
+              <p className="section-heading">👥 Today's Participation</p>
+              <ParticipationTracker answered={participantAnswered} game={game} />
+            </div>
+
             {/* Navigate days — forward AND backward */}
+            <div className="divider" />
             <div className="flex-col gap-12">
               <p className="section-heading">Navigate Days</p>
               <p className="text-muted text-sm">Move forward or backward freely. Resets Live to locked.</p>
@@ -370,6 +480,19 @@ function ScoresTab({ teamScores }) {
 
   return (
     <div className="card card-wide flex-col gap-16">
+      {/* CSV Export */}
+      <button
+        onClick={() => exportCSV(individualScores)}
+        style={{
+          alignSelf: 'flex-end', padding: '7px 16px', borderRadius: '8px',
+          border: '1px solid rgba(76,175,80,0.4)', background: 'rgba(76,175,80,0.1)',
+          color: '#a5d6a7', cursor: 'pointer', fontFamily: 'Poppins, sans-serif',
+          fontSize: '0.8rem', fontWeight: 600,
+        }}
+      >
+        ⬇️ Export CSV
+      </button>
+
       {/* View toggle */}
       <div style={{ display: 'flex', gap: '8px' }}>
         {[
@@ -667,6 +790,106 @@ function AssignmentCard({ participant, assignment, section, day }) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── CSV Export ───────────────────────────────────────────────────────────────
+function exportCSV(individualScores) {
+  const rows = [
+    ['Name', 'Team', 'Score', 'Days Played', 'Days Answered'],
+    ...PARTICIPANTS.map(p => {
+      const g = GROUPS[p.groupId]
+      const data = individualScores[p.id] || {}
+      return [
+        p.name,
+        `${g?.name} — ${g?.subtitle}`,
+        data.myScore || 0,
+        data.answeredDays?.length || 0,
+        (data.answeredDays || []).join(' | '),
+      ]
+    })
+  ]
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href = url
+  a.download = `janmashtami-scores-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+// ── Participation Tracker ─────────────────────────────────────────────────────
+function ParticipationTracker({ answered, game }) {
+  if (!game) return null
+  const key = `S${game.currentSection}D${game.currentDay}`
+  const total     = PARTICIPANTS.length
+  const doneCount = PARTICIPANTS.filter(p => answered[p.id]).length
+  const pct       = Math.round((doneCount / total) * 100)
+
+  return (
+    <div className="flex-col gap-12">
+      {/* Summary bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+          <span style={{ color: 'var(--success)' }}>{doneCount}</span>
+          <span className="text-muted"> / {total} answered</span>
+        </p>
+        <span style={{ fontSize: '0.85rem', color: 'var(--gold)', fontWeight: 700 }}>{pct}%</span>
+      </div>
+      <div style={{ height: '6px', borderRadius: '3px', background: 'rgba(255,255,255,0.1)' }}>
+        <div style={{
+          height: '100%', borderRadius: '3px', width: `${pct}%`,
+          background: 'linear-gradient(90deg, #4caf50, #81c784)', transition: 'width 0.5s ease',
+        }} />
+      </div>
+
+      {/* Per-team breakdown */}
+      {Object.entries(GROUPS).map(([gId, group]) => {
+        const members = PARTICIPANTS.filter(p => p.groupId === gId)
+        const teamDone = members.filter(p => answered[p.id]).length
+        return (
+          <div key={gId} style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div style={{
+              padding: '8px 12px', background: 'rgba(255,255,255,0.04)',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <span style={{ fontWeight: 700, fontSize: '0.83rem', color: 'var(--gold)' }}>
+                {group.emoji} {group.name}
+              </span>
+              <span style={{ fontSize: '0.78rem', color: teamDone === members.length ? 'var(--success)' : 'var(--text-muted)' }}>
+                {teamDone}/{members.length}
+                {teamDone === members.length && ' ✅'}
+              </span>
+            </div>
+            <div style={{ padding: '6px 8px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+              {members.map(p => (
+                <span key={p.id} style={{
+                  padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 500,
+                  background: answered[p.id] ? 'rgba(76,175,80,0.2)' : 'rgba(244,67,54,0.15)',
+                  border: `1px solid ${answered[p.id] ? 'rgba(76,175,80,0.4)' : 'rgba(244,67,54,0.3)'}`,
+                  color: answered[p.id] ? '#a5d6a7' : '#ef9a9a',
+                }}>
+                  {answered[p.id] ? '✓' : '○'} {p.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )
+      })}
+
+      {/* Not answered list */}
+      {doneCount < total && (
+        <div style={{ padding: '10px 14px', borderRadius: '10px', background: 'rgba(244,67,54,0.08)', border: '1px solid rgba(244,67,54,0.2)' }}>
+          <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#ef9a9a', marginBottom: '6px' }}>
+            ⏳ Yet to answer ({total - doneCount}):
+          </p>
+          <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>
+            {PARTICIPANTS.filter(p => !answered[p.id]).map(p => p.name).join(' · ')}
+          </p>
         </div>
       )}
     </div>
