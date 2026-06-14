@@ -37,7 +37,7 @@ export default function Login({ onLogin }) {
             {Object.entries(GROUPS).map(([gId, group]) => {
               const members = PARTICIPANTS.filter(p => p.groupId === gId)
               return (
-                <optgroup key={gId} label={`${group.emoji} Team ${group.name}`}>
+                <optgroup key={gId} label={`${group.emoji} ${group.name} — ${group.subtitle}`}>
                   {members.map(p => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
@@ -59,7 +59,7 @@ export default function Login({ onLogin }) {
               }}>
                 Welcome, <strong style={{ color: 'var(--gold)' }}>{p.name}</strong>!
                 <br />
-                <span className="text-muted">Your team: {g.emoji} <strong>{g.name}</strong></span>
+                <span className="text-muted">Your team: {g.emoji} <strong>{g.name}</strong> — {g.subtitle}</span>
               </div>
             )
           })()}

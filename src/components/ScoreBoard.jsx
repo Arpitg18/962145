@@ -7,8 +7,9 @@ export default function ScoreBoard({ participant, myScore, teamScore, teamName, 
     <div className="card card-wide flex-col gap-20">
       <div className="text-center">
         <span style={{ fontSize: '2rem' }}>{group?.emoji}</span>
-        <h2 className="section-heading mt-8">Team {group?.name}</h2>
-        <p className="text-muted text-sm">Your scores are private — only you can see your individual score</p>
+        <h2 className="section-heading mt-8">{group?.emoji} {group?.name}</h2>
+        <p className="text-muted text-sm">{group?.subtitle}</p>
+        <p className="text-muted text-sm mt-4">Your scores are private — only you can see your individual score</p>
       </div>
 
       <div className="divider" />
