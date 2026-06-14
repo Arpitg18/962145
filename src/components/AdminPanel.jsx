@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { db } from '../firebase'
 import { doc, onSnapshot, setDoc } from 'firebase/firestore'
-import { PARTICIPANTS, GROUPS, SECTIONS, TOTAL_SECTIONS, DAYS_PER_SECTION, getVideoForDay } from '../gameConfig'
+import { PARTICIPANTS, GROUPS, SECTIONS, TOTAL_SECTIONS, DAYS_PER_SECTION, getAssignmentForDay } from '../gameConfig'
 
 const DEFAULT_STATE = {
   currentSection: 1,
@@ -263,23 +263,14 @@ export default function AdminPanel({ onLogout }) {
                 Object.entries(GROUPS).map(([gId, group]) => {
                   const members = PARTICIPANTS.filter(p => p.groupId === gId)
                   return (
-                    <div key={gId} style={{ marginBottom: '14px' }}>
-                      <p style={{ fontWeight: 700, color: 'var(--gold)', fontSize: '0.85rem', marginBottom: '6px' }}>
+                    <div key={gId} style={{ marginBottom: '20px' }}>
+                      <p style={{ fontWeight: 700, color: 'var(--gold)', fontSize: '0.9rem', marginBottom: '8px' }}>
                         {group.emoji} {group.name}
                       </p>
                       {members.map(p => {
-                        const video = getVideoForDay(p.id, scheduleDay)
+                        const a = getAssignmentForDay(p.id, scheduleDay)
                         return (
-                          <div key={p.id} style={{
-                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                            padding: '7px 12px', borderRadius: '8px',
-                            background: 'rgba(255,255,255,0.03)', marginBottom: '3px', fontSize: '0.82rem',
-                          }}>
-                            <span style={{ fontWeight: 500 }}>{p.name}</span>
-                            <span className="text-muted" style={{ fontSize: '0.76rem' }}>
-                              {video?.id} — {video?.title}
-                            </span>
-                          </div>
+                          <AssignmentCard key={p.id} participant={p} assignment={a} />
                         )
                       })}
                     </div>
@@ -307,24 +298,13 @@ export default function AdminPanel({ onLogout }) {
               Object.entries(GROUPS).map(([gId, group]) => {
                 const members = PARTICIPANTS.filter(p => p.groupId === gId)
                 return (
-                  <div key={gId} style={{ marginBottom: '14px' }}>
+                  <div key={gId} style={{ marginBottom: '20px' }}>
                     <p style={{ fontWeight: 700, color: 'var(--gold)', marginBottom: '8px' }}>
                       {group.emoji} {group.name}
                     </p>
                     {members.map(p => {
-                      const video = getVideoForDay(p.id, game.currentDay)
-                      return (
-                        <div key={p.id} style={{
-                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                          padding: '8px 12px', borderRadius: '8px',
-                          background: 'rgba(255,255,255,0.03)', marginBottom: '4px', fontSize: '0.85rem',
-                        }}>
-                          <span>{p.name}</span>
-                          <span className="text-muted" style={{ fontSize: '0.78rem' }}>
-                            {video?.id} — {video?.title}
-                          </span>
-                        </div>
-                      )
+                      const a = getAssignmentForDay(p.id, game.currentDay)
+                      return <AssignmentCard key={p.id} participant={p} assignment={a} />
                     })}
                   </div>
                 )
@@ -384,6 +364,96 @@ function JumpPicker({ current, onJump, saving }) {
       <button className="btn-secondary" onClick={() => onJump(s, d)} disabled={saving} style={{ whiteSpace: 'nowrap' }}>
         Jump ⚡
       </button>
+    </div>
+  )
+}
+
+// ── Assignment card: shows video embed + question + correct answer ────────────
+function AssignmentCard({ participant, assignment }) {
+  const [expanded, setExpanded] = useState(false)
+  const { video, question, questionIndex } = assignment || {}
+  if (!video || !question) return null
+
+  const LETTERS = ['A', 'B', 'C', 'D']
+
+  return (
+    <div style={{
+      borderRadius: '10px', marginBottom: '8px', overflow: 'hidden',
+      border: '1px solid rgba(249,168,37,0.15)',
+      background: 'rgba(255,255,255,0.03)',
+    }}>
+      {/* Header row — always visible */}
+      <div
+        onClick={() => setExpanded(e => !e)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '10px',
+          padding: '8px 12px', cursor: 'pointer', fontSize: '0.83rem',
+        }}
+      >
+        <span style={{ fontWeight: 600, minWidth: '70px' }}>{participant.name}</span>
+        <span className="text-muted" style={{ flex: 1, fontSize: '0.76rem' }}>
+          {video.id} — {video.title}
+          <span style={{ marginLeft: '8px', color: 'var(--gold)', fontSize: '0.7rem' }}>
+            Q{(questionIndex ?? 0) + 1}
+          </span>
+        </span>
+        <span style={{ color: 'var(--gold)', fontSize: '0.8rem' }}>{expanded ? '▲' : '▼'}</span>
+      </div>
+
+      {/* Expanded detail */}
+      {expanded && (
+        <div style={{ padding: '0 12px 14px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          {/* Video embed */}
+          <div style={{
+            position: 'relative', paddingBottom: '45%', height: 0,
+            borderRadius: '8px', overflow: 'hidden', marginTop: '12px',
+            border: '1px solid rgba(249,168,37,0.2)',
+          }}>
+            <iframe
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+              src={`https://www.youtube.com/embed/${video.videoId}?rel=0${video.startAt ? `&start=${video.startAt}` : ''}`}
+              title={video.title}
+              frameBorder="0"
+              allowFullScreen
+            />
+          </div>
+
+          {/* Question */}
+          <div style={{
+            marginTop: '12px', padding: '10px 14px',
+            background: 'rgba(249,168,37,0.07)', borderRadius: '8px',
+            fontSize: '0.85rem', fontWeight: 600, lineHeight: 1.5,
+          }}>
+            {question.q}
+          </div>
+
+          {/* Options with correct answer highlighted */}
+          <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            {question.options.map((opt, idx) => (
+              <div key={idx} style={{
+                padding: '7px 12px', borderRadius: '7px', fontSize: '0.82rem',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: idx === question.correct ? 'rgba(76,175,80,0.2)' : 'rgba(255,255,255,0.03)',
+                border: idx === question.correct ? '1px solid #4caf50' : '1px solid transparent',
+                fontWeight: idx === question.correct ? 700 : 400,
+                color: idx === question.correct ? '#a5d6a7' : 'var(--text-muted)',
+              }}>
+                <span style={{
+                  width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '0.7rem', fontWeight: 700,
+                  background: idx === question.correct ? '#4caf50' : 'rgba(255,255,255,0.1)',
+                  color: idx === question.correct ? '#fff' : 'var(--text-muted)',
+                }}>
+                  {LETTERS[idx]}
+                </span>
+                {opt}
+                {idx === question.correct && <span style={{ marginLeft: 'auto' }}>✅ Correct</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -3,7 +3,7 @@ import './styles/theme.css'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import AdminPanel from './components/AdminPanel'
-import { getVideoForDay, PARTICIPANTS, ADMIN_PASSWORD } from './gameConfig'
+import { getAssignmentForDay, PARTICIPANTS, ADMIN_PASSWORD } from './gameConfig'
 import { db, signInAnon } from './firebase'
 import {
   doc, getDoc, setDoc, updateDoc, onSnapshot, increment
@@ -186,10 +186,12 @@ export default function App() {
     return <Login onLogin={handleLogin} />
   }
 
-  // Compute today's video for Section 1
-  const currentVideo = gameState?.currentSection === 1
-    ? getVideoForDay(participant.id, gameState.currentDay)
+  // Compute today's video + question for Section 1
+  const assignment = gameState?.currentSection === 1
+    ? getAssignmentForDay(participant.id, gameState.currentDay)
     : null
+  const currentVideo    = assignment?.video    ?? null
+  const currentQuestion = assignment?.question ?? null
 
   const currentKey = gameState ? `S${gameState.currentSection}D${gameState.currentDay}` : null
   const hasAnsweredToday = currentKey ? (participantData.answeredDays || []).includes(currentKey) : false
@@ -201,6 +203,7 @@ export default function App() {
       myScore={participantData.myScore || 0}
       teamScore={teamScore}
       currentVideo={currentVideo}
+      currentQuestion={currentQuestion}
       hasAnsweredToday={hasAnsweredToday}
       onAnswerSubmit={handleAnswerSubmit}
       onLogout={handleLogout}

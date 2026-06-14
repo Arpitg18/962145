@@ -2,7 +2,8 @@ import { useState } from 'react'
 
 const LETTERS = ['A', 'B', 'C', 'D']
 
-export default function VideoQuestion({ video, onSubmit, alreadyAnswered }) {
+// Props: video (object), question (object with q/options/correct), onSubmit, alreadyAnswered
+export default function VideoQuestion({ video, question, onSubmit, alreadyAnswered }) {
   const [phase, setPhase] = useState('video') // 'video' | 'question'
   const [selected, setSelected] = useState(null)
   const [revealed, setRevealed] = useState(false)
@@ -24,9 +25,9 @@ export default function VideoQuestion({ video, onSubmit, alreadyAnswered }) {
   }
 
   const handleSubmit = () => {
-    if (selected === null) return
+    if (selected === null || !question) return
     setRevealed(true)
-    const isCorrect = selected === video.correctOption
+    const isCorrect = selected === question.correct
     setTimeout(() => {
       onSubmit({ videoId: video.id, selectedOption: selected, isCorrect, points: isCorrect ? video.points : 0 })
     }, 2000)
@@ -79,14 +80,14 @@ export default function VideoQuestion({ video, onSubmit, alreadyAnswered }) {
         background: 'rgba(249,168,37,0.08)', border: '1px solid rgba(249,168,37,0.25)',
         borderRadius: '12px', padding: '16px 20px',
       }}>
-        <p style={{ fontSize: '1.05rem', fontWeight: 600, lineHeight: 1.5 }}>{video.question}</p>
+        <p style={{ fontSize: '1.05rem', fontWeight: 600, lineHeight: 1.5 }}>{question?.q}</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {video.options.map((opt, idx) => {
+        {(question?.options || []).map((opt, idx) => {
           let extraClass = ''
           if (revealed) {
-            if (idx === video.correctOption) extraClass = 'correct'
+            if (idx === question.correct) extraClass = 'correct'
             else if (idx === selected) extraClass = 'incorrect'
           } else if (idx === selected) {
             extraClass = 'selected'
@@ -100,8 +101,8 @@ export default function VideoQuestion({ video, onSubmit, alreadyAnswered }) {
             >
               <span className="option-letter">{LETTERS[idx]}</span>
               {opt}
-              {revealed && idx === video.correctOption && <span style={{ marginLeft: 'auto' }}>✅</span>}
-              {revealed && idx === selected && idx !== video.correctOption && <span style={{ marginLeft: 'auto' }}>❌</span>}
+              {revealed && idx === question.correct && <span style={{ marginLeft: 'auto' }}>✅</span>}
+              {revealed && idx === selected && idx !== question.correct && <span style={{ marginLeft: 'auto' }}>❌</span>}
             </button>
           )
         })}
@@ -113,9 +114,9 @@ export default function VideoQuestion({ video, onSubmit, alreadyAnswered }) {
         </button>
       )}
 
-      {revealed && (
+      {revealed && question && (
         <div className="text-center" style={{ animation: 'fadeInUp 0.4s ease' }}>
-          {selected === video.correctOption
+          {selected === question.correct
             ? <p style={{ color: 'var(--success)', fontWeight: 700, fontSize: '1.1rem' }}>🎉 Correct! +{video.points} points</p>
             : <p style={{ color: 'var(--error)', fontWeight: 700 }}>❌ Not quite — better luck tomorrow!</p>
           }

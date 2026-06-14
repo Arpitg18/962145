@@ -5,7 +5,7 @@ import ScoreBoard from './ScoreBoard'
 
 export default function Dashboard({
   participant, gameState, myScore, teamScore,
-  currentVideo, hasAnsweredToday, onAnswerSubmit, onLogout
+  currentVideo, currentQuestion, hasAnsweredToday, onAnswerSubmit, onLogout
 }) {
   const [tab, setTab] = useState('play')
   const group = GROUPS[participant.groupId]
@@ -99,6 +99,7 @@ export default function Dashboard({
             {gameState?.isLive && !deadlinePassed && gameState?.currentSection === 1 && (
               <VideoQuestion
                 video={currentVideo}
+                question={currentQuestion}
                 onSubmit={onAnswerSubmit}
                 alreadyAnswered={hasAnsweredToday}
               />
