@@ -322,29 +322,159 @@ export default function AdminPanel({ onLogout }) {
 
         {/* ── SCORES TAB ──────────────────────────────────────────────────── */}
         {tab === 'scores' && (
-          <div className="card card-wide flex-col gap-16">
-            <p className="section-heading">Team Leaderboard</p>
-            {Object.entries(GROUPS)
-              .map(([gId, group]) => ({ gId, group, score: teamScores[gId] || 0 }))
-              .sort((a, b) => b.score - a.score)
-              .map((item, rank) => (
-                <div key={item.gId} style={{
-                  display: 'flex', alignItems: 'center', gap: '16px',
-                  padding: '14px 16px', borderRadius: '12px',
-                  background: rank === 0 ? 'rgba(249,168,37,0.12)' : 'rgba(255,255,255,0.04)',
-                  border: rank === 0 ? '1px solid rgba(249,168,37,0.4)' : '1px solid rgba(255,255,255,0.06)',
-                }}>
-                  <span style={{ fontSize: '1.3rem', width: '32px', textAlign: 'center' }}>
+          <ScoresTab teamScores={teamScores} />
+        )}
+
+      </div>
+    </div>
+  )
+}
+
+// ── Scores tab: team leaderboard + individual breakdown ──────────────────────
+function ScoresTab({ teamScores }) {
+  const [individualScores, setIndividualScores] = useState({})
+  const [view, setView] = useState('teams') // 'teams' | 'individuals'
+  const [expandedGroup, setExpandedGroup] = useState(null)
+
+  useEffect(() => {
+    const unsubs = PARTICIPANTS.map(p => {
+      const ref = doc(db, 'participants', p.id)
+      return onSnapshot(ref, snap => {
+        if (snap.exists()) {
+          setIndividualScores(prev => ({
+            ...prev,
+            [p.id]: {
+              myScore: snap.data().myScore || 0,
+              answeredDays: snap.data().answeredDays || [],
+            }
+          }))
+        }
+      })
+    })
+    return () => unsubs.forEach(u => u())
+  }, [])
+
+  const sortedTeams = Object.entries(GROUPS)
+    .map(([gId, group]) => ({ gId, group, score: teamScores[gId] || 0 }))
+    .sort((a, b) => b.score - a.score)
+
+  // All individuals sorted by score
+  const allIndividuals = PARTICIPANTS
+    .map(p => ({
+      ...p,
+      group: GROUPS[p.groupId],
+      myScore: individualScores[p.id]?.myScore || 0,
+      daysAnswered: individualScores[p.id]?.answeredDays?.length || 0,
+    }))
+    .sort((a, b) => b.myScore - a.myScore)
+
+  return (
+    <div className="card card-wide flex-col gap-16">
+      {/* View toggle */}
+      <div style={{ display: 'flex', gap: '8px' }}>
+        {[
+          { id: 'teams', label: '🏆 Team Leaderboard' },
+          { id: 'individuals', label: '⭐ Individual Scores' },
+        ].map(v => (
+          <button key={v.id} onClick={() => setView(v.id)} style={{
+            flex: 1, padding: '8px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+            fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: '0.82rem',
+            background: view === v.id ? 'var(--gold)' : 'rgba(255,255,255,0.07)',
+            color: view === v.id ? '#1a237e' : 'var(--text-muted)',
+          }}>{v.label}</button>
+        ))}
+      </div>
+
+      <div className="divider" />
+
+      {/* ── TEAM VIEW ── */}
+      {view === 'teams' && (
+        <div className="flex-col gap-10" style={{ gap: '10px' }}>
+          {sortedTeams.map((item, rank) => {
+            const members = PARTICIPANTS.filter(p => p.groupId === item.gId)
+            const isExpanded = expandedGroup === item.gId
+            return (
+              <div key={item.gId} style={{
+                borderRadius: '12px', overflow: 'hidden',
+                background: rank === 0 ? 'rgba(249,168,37,0.10)' : 'rgba(255,255,255,0.04)',
+                border: rank === 0 ? '1px solid rgba(249,168,37,0.4)' : '1px solid rgba(255,255,255,0.06)',
+              }}>
+                {/* Team row */}
+                <div
+                  onClick={() => setExpandedGroup(isExpanded ? null : item.gId)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', cursor: 'pointer' }}
+                >
+                  <span style={{ fontSize: '1.3rem', width: '28px', textAlign: 'center' }}>
                     {rank === 0 ? '🥇' : rank === 1 ? '🥈' : rank === 2 ? '🥉' : `#${rank + 1}`}
                   </span>
                   <span style={{ flex: 1, fontWeight: 600 }}>{item.group.emoji} {item.group.name}</span>
                   <span style={{ fontWeight: 700, color: 'var(--gold)', fontSize: '1.2rem' }}>{item.score}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{isExpanded ? '▲' : '▼'}</span>
                 </div>
-              ))}
-          </div>
-        )}
 
-      </div>
+                {/* Individual breakdown per team */}
+                {isExpanded && (
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '8px 12px 12px' }}>
+                    <p className="text-muted text-sm" style={{ marginBottom: '8px', paddingLeft: '4px' }}>Individual scores</p>
+                    {members
+                      .map(p => ({ ...p, myScore: individualScores[p.id]?.myScore || 0, days: individualScores[p.id]?.answeredDays?.length || 0 }))
+                      .sort((a, b) => b.myScore - a.myScore)
+                      .map((p, i) => (
+                        <div key={p.id} style={{
+                          display: 'flex', alignItems: 'center', gap: '10px',
+                          padding: '8px 12px', borderRadius: '8px', marginBottom: '4px',
+                          background: i === 0 ? 'rgba(249,168,37,0.08)' : 'rgba(255,255,255,0.03)',
+                        }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', width: '18px' }}>#{i + 1}</span>
+                          <span style={{ flex: 1, fontSize: '0.88rem', fontWeight: i === 0 ? 700 : 400 }}>{p.name}</span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.days} day{p.days !== 1 ? 's' : ''}</span>
+                          <span style={{
+                            fontWeight: 700, fontSize: '1rem',
+                            color: i === 0 ? 'var(--gold)' : 'var(--text-primary)',
+                            minWidth: '36px', textAlign: 'right',
+                          }}>{p.myScore}</span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* ── INDIVIDUAL VIEW ── */}
+      {view === 'individuals' && (
+        <div className="flex-col gap-8" style={{ gap: '8px' }}>
+          <p className="text-muted text-sm">All {PARTICIPANTS.length} participants ranked by score</p>
+          {allIndividuals.map((p, rank) => (
+            <div key={p.id} style={{
+              display: 'flex', alignItems: 'center', gap: '12px',
+              padding: '10px 14px', borderRadius: '10px',
+              background: rank === 0 ? 'rgba(249,168,37,0.12)' : 'rgba(255,255,255,0.03)',
+              border: rank < 3 ? '1px solid rgba(249,168,37,0.2)' : '1px solid rgba(255,255,255,0.05)',
+            }}>
+              <span style={{ fontSize: '1rem', width: '28px', textAlign: 'center', flexShrink: 0 }}>
+                {rank === 0 ? '🥇' : rank === 1 ? '🥈' : rank === 2 ? '🥉' : <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>#{rank + 1}</span>}
+              </span>
+              <span style={{ flex: 1, fontWeight: rank < 3 ? 700 : 400, fontSize: '0.88rem' }}>{p.name}</span>
+              <span style={{
+                fontSize: '0.72rem', padding: '2px 8px', borderRadius: '20px',
+                background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)',
+              }}>
+                {p.group?.emoji} {p.group?.name}
+              </span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minWidth: '50px', textAlign: 'right' }}>
+                {p.daysAnswered}d played
+              </span>
+              <span style={{
+                fontWeight: 700, fontSize: '1.05rem', minWidth: '36px', textAlign: 'right',
+                color: rank === 0 ? 'var(--gold)' : 'var(--text-primary)',
+              }}>{p.myScore}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
