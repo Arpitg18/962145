@@ -3,13 +3,39 @@ import './styles/theme.css'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import AdminPanel from './components/AdminPanel'
-import { getAssignmentForDay, PARTICIPANTS, ADMIN_PASSWORD } from './gameConfig'
+import { getAssignmentForDay, ROUND1_VIDEOS, PARTICIPANTS, ADMIN_PASSWORD } from './gameConfig'
 import { db, signInAnon } from './firebase'
 import {
   doc, getDoc, setDoc, updateDoc, onSnapshot, increment
 } from 'firebase/firestore'
 
 // ── Firestore helpers ──────────────────────────────────────────────────────
+
+// Resolve the final assignment for a participant on a day, honouring any overrides.
+// Priority: assignmentOverride > default algorithm
+//           questionOverride > default question in video
+async function resolveAssignment(participantId, section, day) {
+  const base = getAssignmentForDay(participantId, day)
+  if (!base) return null
+
+  // Check assignment override (admin switched this person's video for this day)
+  const assignKey = `${participantId}_S${section}D${day}`
+  const assignSnap = await getDoc(doc(db, 'assignmentOverrides', assignKey))
+  let video = base.video
+  let questionIndex = base.questionIndex
+  if (assignSnap.exists()) {
+    const ov = assignSnap.data()
+    video = ROUND1_VIDEOS.find(v => v.id === ov.videoId) ?? video
+    questionIndex = ov.questionIndex ?? questionIndex
+  }
+
+  // Check question override (admin edited the question/answer for this video+qIdx)
+  const qKey = `${video.id}_${questionIndex}`
+  const qSnap = await getDoc(doc(db, 'questionOverrides', qKey))
+  const question = qSnap.exists() ? qSnap.data() : (video.questions?.[questionIndex] ?? null)
+
+  return { video, questionIndex, question }
+}
 
 async function loadParticipantData(participantId) {
   const ref = doc(db, 'participants', participantId)
@@ -186,12 +212,16 @@ export default function App() {
     return <Login onLogin={handleLogin} />
   }
 
-  // Compute today's video + question for Section 1
-  const assignment = gameState?.currentSection === 1
-    ? getAssignmentForDay(participant.id, gameState.currentDay)
-    : null
-  const currentVideo    = assignment?.video    ?? null
-  const currentQuestion = assignment?.question ?? null
+  // Compute today's video + question for Section 1 (with override support)
+  const [resolvedAssignment, setResolvedAssignment] = useState(null)
+  useEffect(() => {
+    if (!gameState || gameState.currentSection !== 1 || !participant) return
+    resolveAssignment(participant.id, gameState.currentSection, gameState.currentDay)
+      .then(setResolvedAssignment)
+  }, [gameState?.currentSection, gameState?.currentDay, participant?.id])
+
+  const currentVideo    = resolvedAssignment?.video    ?? null
+  const currentQuestion = resolvedAssignment?.question ?? null
 
   const currentKey = gameState ? `S${gameState.currentSection}D${gameState.currentDay}` : null
   const hasAnsweredToday = currentKey ? (participantData.answeredDays || []).includes(currentKey) : false

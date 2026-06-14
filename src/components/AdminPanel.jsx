@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { db } from '../firebase'
-import { doc, onSnapshot, setDoc } from 'firebase/firestore'
-import { PARTICIPANTS, GROUPS, SECTIONS, TOTAL_SECTIONS, DAYS_PER_SECTION, getAssignmentForDay } from '../gameConfig'
+import { doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore'
+import { PARTICIPANTS, GROUPS, SECTIONS, TOTAL_SECTIONS, DAYS_PER_SECTION, ROUND1_VIDEOS, getAssignmentForDay } from '../gameConfig'
+import AdminLibrary from './AdminLibrary'
 
 const DEFAULT_STATE = {
   currentSection: 1,
@@ -13,7 +14,7 @@ const DEFAULT_STATE = {
 export default function AdminPanel({ onLogout }) {
   const [game, setGame]           = useState(null)
   const [saving, setSaving]       = useState(false)
-  const [tab, setTab]             = useState('control') // 'control' | 'schedule' | 'preview' | 'scores'
+  const [tab, setTab]             = useState('control') // 'control' | 'schedule' | 'preview' | 'library' | 'scores'
   const [teamScores, setTeamScores] = useState({})
   const [deadlineInput, setDeadlineInput] = useState('')
 
@@ -90,6 +91,7 @@ export default function AdminPanel({ onLogout }) {
           { id: 'control',  label: '🎛️ Control'  },
           { id: 'schedule', label: '📅 Schedule' },
           { id: 'preview',  label: '👁️ Preview'  },
+          { id: 'library',  label: '📚 Library'  },
           { id: 'scores',   label: '🏆 Scores'   },
         ].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
@@ -270,7 +272,7 @@ export default function AdminPanel({ onLogout }) {
                       {members.map(p => {
                         const a = getAssignmentForDay(p.id, scheduleDay)
                         return (
-                          <AssignmentCard key={p.id} participant={p} assignment={a} />
+                          <AssignmentCard key={p.id} participant={p} assignment={a} section={scheduleSection} day={scheduleDay} />
                         )
                       })}
                     </div>
@@ -304,7 +306,7 @@ export default function AdminPanel({ onLogout }) {
                     </p>
                     {members.map(p => {
                       const a = getAssignmentForDay(p.id, game.currentDay)
-                      return <AssignmentCard key={p.id} participant={p} assignment={a} />
+                      return <AssignmentCard key={p.id} participant={p} assignment={a} section={game.currentSection} day={game.currentDay} />
                     })}
                   </div>
                 )
@@ -314,6 +316,9 @@ export default function AdminPanel({ onLogout }) {
             )}
           </div>
         )}
+
+        {/* ── LIBRARY TAB ─────────────────────────────────────────────────── */}
+        {tab === 'library' && <AdminLibrary />}
 
         {/* ── SCORES TAB ──────────────────────────────────────────────────── */}
         {tab === 'scores' && (
@@ -368,66 +373,149 @@ function JumpPicker({ current, onJump, saving }) {
   )
 }
 
-// ── Assignment card: shows video embed + question + correct answer ────────────
-function AssignmentCard({ participant, assignment }) {
+// ── Assignment card: video embed + question + correct answer + Switch ─────────
+function AssignmentCard({ participant, assignment, section, day }) {
   const [expanded, setExpanded] = useState(false)
+  const [switching, setSwitching] = useState(false)
+  const [switchVideo, setSwitchVideo] = useState('')
+  const [switchQIdx, setSwitchQIdx] = useState(0)
+  const [saving, setSaving] = useState(false)
+  const [hasOverride, setHasOverride] = useState(false)
+
   const { video, question, questionIndex } = assignment || {}
+
+  // Check if this participant+day has an assignment override
+  useEffect(() => {
+    if (!participant || !section || !day) return
+    const key = `${participant.id}_S${section}D${day}`
+    const ref = doc(db, 'assignmentOverrides', key)
+    const unsub = onSnapshot(ref, snap => setHasOverride(snap.exists()))
+    return () => unsub()
+  }, [participant?.id, section, day])
+
   if (!video || !question) return null
 
   const LETTERS = ['A', 'B', 'C', 'D']
 
+  async function saveSwitch() {
+    if (!switchVideo) return
+    setSaving(true)
+    const key = `${participant.id}_S${section}D${day}`
+    await setDoc(doc(db, 'assignmentOverrides', key), {
+      videoId: switchVideo,
+      questionIndex: switchQIdx,
+      overriddenAt: new Date().toISOString(),
+    })
+    setSaving(false)
+    setSwitching(false)
+  }
+
+  async function clearSwitch() {
+    setSaving(true)
+    const key = `${participant.id}_S${section}D${day}`
+    await deleteDoc(doc(db, 'assignmentOverrides', key))
+    setSaving(false)
+  }
+
+  const selectedVideoObj = ROUND1_VIDEOS.find(v => v.id === switchVideo)
+
   return (
     <div style={{
       borderRadius: '10px', marginBottom: '8px', overflow: 'hidden',
-      border: '1px solid rgba(249,168,37,0.15)',
-      background: 'rgba(255,255,255,0.03)',
+      border: hasOverride ? '1px solid rgba(249,168,37,0.6)' : '1px solid rgba(249,168,37,0.15)',
+      background: hasOverride ? 'rgba(249,168,37,0.04)' : 'rgba(255,255,255,0.03)',
     }}>
-      {/* Header row — always visible */}
-      <div
-        onClick={() => setExpanded(e => !e)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: '10px',
-          padding: '8px 12px', cursor: 'pointer', fontSize: '0.83rem',
-        }}
-      >
-        <span style={{ fontWeight: 600, minWidth: '70px' }}>{participant.name}</span>
-        <span className="text-muted" style={{ flex: 1, fontSize: '0.76rem' }}>
-          {video.id} — {video.title}
-          <span style={{ marginLeft: '8px', color: 'var(--gold)', fontSize: '0.7rem' }}>
-            Q{(questionIndex ?? 0) + 1}
+      {/* Header row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px' }}>
+        <div onClick={() => setExpanded(e => !e)} style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, cursor: 'pointer' }}>
+          <span style={{ fontWeight: 600, minWidth: '65px', fontSize: '0.83rem' }}>{participant.name}</span>
+          <span className="text-muted" style={{ flex: 1, fontSize: '0.76rem' }}>
+            {video.id} — {video.title}
+            <span style={{ marginLeft: '6px', color: 'var(--gold)', fontSize: '0.7rem' }}>Q{(questionIndex ?? 0) + 1}</span>
+            {hasOverride && <span style={{ marginLeft: '6px', color: 'var(--saffron-light)', fontSize: '0.7rem' }}>🔀 Switched</span>}
           </span>
-        </span>
-        <span style={{ color: 'var(--gold)', fontSize: '0.8rem' }}>{expanded ? '▲' : '▼'}</span>
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{expanded ? '▲' : '▼'}</span>
+        </div>
+        {/* Switch button */}
+        <button
+          onClick={() => { setSwitching(s => !s); setSwitchVideo(video.id); setSwitchQIdx(questionIndex ?? 0) }}
+          style={{
+            padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600,
+            border: '1px solid rgba(2,136,209,0.4)', background: 'rgba(2,136,209,0.1)',
+            color: '#81d4fa', cursor: 'pointer', fontFamily: 'Poppins, sans-serif', flexShrink: 0,
+          }}
+        >
+          🔀 Switch
+        </button>
+        {hasOverride && (
+          <button onClick={clearSwitch} disabled={saving} style={{
+            padding: '4px 8px', borderRadius: '6px', fontSize: '0.72rem',
+            border: '1px solid rgba(244,67,54,0.4)', background: 'rgba(244,67,54,0.1)',
+            color: '#ef9a9a', cursor: 'pointer', fontFamily: 'Poppins, sans-serif', flexShrink: 0,
+          }}>
+            ✕ Clear
+          </button>
+        )}
       </div>
 
-      {/* Expanded detail */}
+      {/* Switch panel */}
+      {switching && (
+        <div style={{ padding: '10px 12px', borderTop: '1px solid rgba(2,136,209,0.2)', background: 'rgba(2,136,209,0.05)' }}>
+          <p className="text-sm" style={{ color: '#81d4fa', marginBottom: '8px', fontWeight: 600 }}>
+            🔀 Switch {participant.name}'s video for Section {section} Day {day}
+          </p>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <select className="input-field" style={{ flex: 2, minWidth: '180px' }}
+              value={switchVideo} onChange={e => setSwitchVideo(e.target.value)}>
+              <option value="">— Select video —</option>
+              {ROUND1_VIDEOS.map(v => (
+                <option key={v.id} value={v.id}>{v.id} — {v.title}</option>
+              ))}
+            </select>
+            <select className="input-field" style={{ width: '90px' }}
+              value={switchQIdx} onChange={e => setSwitchQIdx(Number(e.target.value))}>
+              {[0, 1, 2].map(i => <option key={i} value={i}>Q{i + 1}</option>)}
+            </select>
+            <button onClick={saveSwitch} disabled={saving || !switchVideo} className="btn-primary"
+              style={{ padding: '10px 16px', fontSize: '0.82rem' }}>
+              {saving ? '…' : '💾 Save'}
+            </button>
+            <button onClick={() => setSwitching(false)} className="btn-secondary" style={{ padding: '10px 14px', fontSize: '0.82rem' }}>
+              Cancel
+            </button>
+          </div>
+          {/* Preview the selected question */}
+          {selectedVideoObj && (
+            <div style={{ marginTop: '10px', padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', fontSize: '0.8rem' }}>
+              <p style={{ fontWeight: 600, marginBottom: '4px' }}>{selectedVideoObj.title} — Q{switchQIdx + 1}:</p>
+              <p className="text-muted">{selectedVideoObj.questions?.[switchQIdx]?.q}</p>
+              <p style={{ color: '#4caf50', marginTop: '4px', fontSize: '0.75rem' }}>
+                ✅ Correct: {selectedVideoObj.questions?.[switchQIdx]?.options?.[selectedVideoObj.questions?.[switchQIdx]?.correct]}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Expanded detail: video + question */}
       {expanded && (
         <div style={{ padding: '0 12px 14px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          {/* Video embed */}
-          <div style={{
-            position: 'relative', paddingBottom: '45%', height: 0,
-            borderRadius: '8px', overflow: 'hidden', marginTop: '12px',
-            border: '1px solid rgba(249,168,37,0.2)',
-          }}>
-            <iframe
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-              src={`https://www.youtube.com/embed/${video.videoId}?rel=0${video.startAt ? `&start=${video.startAt}` : ''}`}
-              title={video.title}
-              frameBorder="0"
-              allowFullScreen
-            />
-          </div>
-
-          {/* Question */}
-          <div style={{
-            marginTop: '12px', padding: '10px 14px',
-            background: 'rgba(249,168,37,0.07)', borderRadius: '8px',
-            fontSize: '0.85rem', fontWeight: 600, lineHeight: 1.5,
-          }}>
+          {!video.videoId?.startsWith('PENDING') && (
+            <div style={{
+              position: 'relative', paddingBottom: '45%', height: 0,
+              borderRadius: '8px', overflow: 'hidden', marginTop: '12px',
+              border: '1px solid rgba(249,168,37,0.2)',
+            }}>
+              <iframe
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                src={`https://www.youtube.com/embed/${video.videoId}?rel=0${video.startAt ? `&start=${video.startAt}` : ''}`}
+                title={video.title} frameBorder="0" allowFullScreen
+              />
+            </div>
+          )}
+          <div style={{ marginTop: '12px', padding: '10px 14px', background: 'rgba(249,168,37,0.07)', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, lineHeight: 1.5 }}>
             {question.q}
           </div>
-
-          {/* Options with correct answer highlighted */}
           <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
             {question.options.map((opt, idx) => (
               <div key={idx} style={{
@@ -439,14 +527,11 @@ function AssignmentCard({ participant, assignment }) {
                 color: idx === question.correct ? '#a5d6a7' : 'var(--text-muted)',
               }}>
                 <span style={{
-                  width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0,
+                  width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0, fontSize: '0.7rem', fontWeight: 700,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.7rem', fontWeight: 700,
                   background: idx === question.correct ? '#4caf50' : 'rgba(255,255,255,0.1)',
                   color: idx === question.correct ? '#fff' : 'var(--text-muted)',
-                }}>
-                  {LETTERS[idx]}
-                </span>
+                }}>{LETTERS[idx]}</span>
                 {opt}
                 {idx === question.correct && <span style={{ marginLeft: 'auto' }}>✅ Correct</span>}
               </div>
