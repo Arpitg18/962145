@@ -30,7 +30,7 @@ export const PARTICIPANTS = [
   { id: 'p21', name: 'Kritika',         groupId: 'G4' },
   { id: 'p22', name: 'Prachi Gupta',    groupId: 'G4' },
   { id: 'p23', name: 'Akshita Neham',   groupId: 'G4' },
-  { id: 'p24', name: 'TBD',             groupId: 'G4' }, // ← replace name when confirmed
+  { id: 'p24', name: 'Usha',            groupId: 'G4' },
 
   // ── Team 5 ──────────────────────────────────────────────────────────────
   { id: 'p25', name: 'Neenu Gupta',     groupId: 'G5' },
