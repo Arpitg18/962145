@@ -36,7 +36,7 @@ export const PARTICIPANTS = [
   { id: 'p29', name: 'Sonia',   groupId: 'G5' },
   { id: 'p30', name: 'Manju',   groupId: 'G5' },
   // ── Team 6: RADHA RAMAN — 7 members ────────────────────────────────────
-  { id: 'p31', name: 'Chadrika', groupId: 'G6' },
+  { id: 'p31', name: 'Chandrika', groupId: 'G6' },
   { id: 'p32', name: 'Sanchit',  groupId: 'G6' },
   { id: 'p33', name: 'Devansh',  groupId: 'G6' },
   { id: 'p34', name: 'Pooja',    groupId: 'G6' },
