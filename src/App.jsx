@@ -57,16 +57,27 @@ export default function App() {
 
   // Sign in anonymously on mount + restore session
   useEffect(() => {
-    signInAnon().then(async () => {
-      const saved = localStorage.getItem('jk_current_user')
-      if (saved) {
-        const p = JSON.parse(saved)
-        setParticipant(p)
-        const data = await loadParticipantData(p.id)
-        setGameState({ ...data, videoAssignment: VIDEO_ASSIGNMENTS[p.id] })
-      }
+    const timeout = setTimeout(() => {
+      // If Firebase takes more than 6s, proceed without it (graceful degradation)
       setLoading(false)
-    })
+    }, 6000)
+
+    signInAnon()
+      .then(async () => {
+        clearTimeout(timeout)
+        const saved = localStorage.getItem('jk_current_user')
+        if (saved) {
+          const p = JSON.parse(saved)
+          setParticipant(p)
+          const data = await loadParticipantData(p.id)
+          setGameState({ ...data, videoAssignment: VIDEO_ASSIGNMENTS[p.id] })
+        }
+        setLoading(false)
+      })
+      .catch(() => {
+        clearTimeout(timeout)
+        setLoading(false)
+      })
   }, [])
 
   // Live-sync team score from Firestore whenever participant is set
