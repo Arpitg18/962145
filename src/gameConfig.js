@@ -137,7 +137,7 @@ export const ROUND1_VIDEOS = [
         correct: 3,
       },
       {
-        q: 'What does Lord Jagannath's love for the old lady's Khichdi teach us?',
+        q: "What does Lord Jagannath's love for the old lady's Khichdi teach us?",
         options: ['God prefers complex temple rituals over a devotee's personal love.', 'You should only offer food to God if you are an expert cook.', 'Pure love and feeding God with a caring heart are much more important than rigid rituals and external rules.', 'People should never eat Khichdi in the morning.'],
         correct: 2,
       },
@@ -211,11 +211,11 @@ export const ROUND1_VIDEOS = [
       },
       {
         q: 'What miracle happened when the Maharaj (king) brought the chanting cow near his sick wife?',
-        options: ['The cow gave them a bucket of gold coins.', 'The king's wife suddenly woke up and was completely cured of her illness.', 'he queen decided to leave the palace to become a sadhu.', 'The illness spread to the rest of the kingdom.'],
+        options: ['The cow gave them a bucket of gold coins.', "The king's wife suddenly woke up and was completely cured of her illness.", 'he queen decided to leave the palace to become a sadhu.', 'The illness spread to the rest of the kingdom.'],
         correct: 1,
       },
       {
-        q: 'What is the main moral lesson behind the cow chanting Krishna's name?',
+        q: "What is the main moral lesson behind the cow chanting Krishna's name?" ,
         options: ['Animals should only be fed holy leaves and nothing else.', 'Spiritual vibration and the name of God have immense healing power that can touch any soul, including animals.', 'Kings should always keep a cow inside their palace bedrooms.', 'You should only pray to God when a family member falls very sick.'],
         correct: 1,
       },
