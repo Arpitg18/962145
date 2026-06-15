@@ -278,26 +278,16 @@ export const ROUND1_VIDEOS = [
   },
     ],
   },
-  {
-    id: 'v10', videoId: 'Vv-l6XaosVc', points: 10,
-    title: 'Krishna & Sudama — A Beautiful Friendship',
+  { 
+    id: 'v10', 
+    videoId: 'j5gUr6O1i4o', 
+    points: 10, 
+    title: 'What Does the Name Krishna Mean?', 
     questions: [
-      {
-        q: 'When the poor Sudama visited Krishna\'s palace in Dwarka, what humble gift did he bring?',
-        options: ['A bag of gold coins', 'A handwoven shawl', 'A small bundle of flattened rice (poha / chivda)', 'Fresh flowers from the Yamuna bank'],
-        correct: 2,
-      },
-      {
-        q: 'When Sudama arrived at Krishna\'s grand palace, what was going through his mind?',
-        options: ['He felt proud and confident, expecting a big reward', 'He was shy and hesitant, wondering if his great king-friend would even remember a poor old man like him', 'He was angry about his poverty and planned to ask Krishna for help directly', 'He was joyful and dancing, singing bhajans all the way'],
-        correct: 1,
-      },
-      {
-        q: 'The friendship of Krishna and Sudama is the ultimate example of "Mitra Dharma". What does this mean?',
-        options: ['"Satyameva Jayate" — truth alone triumphs', '"Vasudhaiva Kutumbakam" — the whole world is one family', 'The sacred duty of friendship — which transcends all worldly differences of wealth, status and time', '"Ahimsa Paramo Dharma" — non-violence is the highest duty'],
-        correct: 2,
-      },
-    ],
+      { q: 'What is the literal Sanskrit meaning of the word "Krishna"?', options: ['The Dark, All-Attractive One', 'The Silent Warrior', 'The Lord of Light', 'The First Born'], correct: 0 },
+      { q: 'According to the Mahabharata, who else shares the name "Krishna" besides Vasudeva Krishna?', options: ['Draupadi and Veda Vyasa', 'Arjuna and Bhima', 'Yudhishthira and Karna', 'Kamsa and Shishupala'], correct: 0 },
+      { q: 'According to the video, what does the first part of the name,"Krish",mean?', options: ['Dark skin color', 'Supreme person or existence', 'Playing a musical instrument', 'Running fast'], correct: 1 }
+    ] 
   },
   // ── PENDING: 8 more videos (v11–v18) — add links and 3 questions each ──────
   { 
@@ -478,17 +468,6 @@ export const ROUND1_VIDEOS = [
     ], 
     correct: 1 
   }
-    ] 
-  },
-  { 
-    id: 'v19', 
-    videoId: 'j5gUr6O1i4o', 
-    points: 10, 
-    title: 'What Does the Name Krishna Mean?', 
-    questions: [
-      { q: 'What is the literal Sanskrit meaning of the word "Krishna"?', options: ['The Dark, All-Attractive One', 'The Silent Warrior', 'The Lord of Light', 'The First Born'], correct: 0 },
-      { q: 'According to the Mahabharata, who else shares the name "Krishna" besides Vasudeva Krishna?', options: ['Draupadi and Veda Vyasa', 'Arjuna and Bhima', 'Yudhishthira and Karna', 'Kamsa and Shishupala'], correct: 0 },
-      { q: 'According to the video, what does the first part of the name,"Krish",mean?', options: ['Dark skin color', 'Supreme person or existence', 'Playing a musical instrument', 'Running fast'], correct: 1 }
     ] 
   }
 ]
