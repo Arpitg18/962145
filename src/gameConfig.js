@@ -228,7 +228,7 @@ export const ROUND1_VIDEOS = [
     ],
   },
   {
-    id: 'v09', videoId: '-UZdJa1ul9Y', points: 10,
+    id: 'v09', videoId: 'm6Y5CYeagFw', points: 10,
     title: 'Why Was Sudama Poor & Krishna a King?',
     questions: [
       {
@@ -249,7 +249,7 @@ export const ROUND1_VIDEOS = [
     ],
   },
   {
-    id: 'v10', videoId: 'Vv-l6XaosVc', points: 10,
+    id: 'v10', videoId: 'mUxTv7hTD2c', points: 10,
     title: 'Krishna & Sudama — A Beautiful Friendship',
     questions: [
       {
@@ -270,14 +270,16 @@ export const ROUND1_VIDEOS = [
     ],
   },
   // ── PENDING: 8 more videos (v11–v18) — add links and 3 questions each ──────
-  { id: 'v11', videoId: 'PENDING_11', points: 10, title: 'Krishna Leela 11', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v12', videoId: 'PENDING_12', points: 10, title: 'Krishna Leela 12', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v13', videoId: 'PENDING_13', points: 10, title: 'Krishna Leela 13', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v14', videoId: 'PENDING_14', points: 10, title: 'Krishna Leela 14', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v15', videoId: 'PENDING_15', points: 10, title: 'Krishna Leela 15', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v16', videoId: 'PENDING_16', points: 10, title: 'Krishna Leela 16', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v17', videoId: 'PENDING_17', points: 10, title: 'Krishna Leela 17', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v18', videoId: 'PENDING_18', points: 10, title: 'Krishna Leela 18', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
+  { id: 'v11', videoId: 'Wox7-N3MYKg',playlistId: 'RDWox7-N3MYKg', points: 10, title: 'Krishna Leela 11', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
+  { id: 'v12', videoId: 'Feoea8FQTI0',playlistId: 'RDFeoea8FQTI0', points: 10, title: 'Krishna Leela 12', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
+  { id: 'v13', videoId: '3YLog5mrAYM',playlistId: 'RD3YLog5mrAYM', points: 10, title: 'Krishna Leela 13', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
+  { id: 'v14', videoId: 'GIFgAcZcEFQ',playlistId: 'RDGIFgAcZcEFQ', points: 10, title: 'Krishna Leela 14', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
+  { id: 'v15', videoId: 'g883CDeZtBA',playlistId: 'RDg883CDeZtBA', points: 10, title: 'Krishna Leela 15', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
+  { id: 'v16', videoId: 'LqrgTZWTvB4',playlistId: 'RDLqrgTZWTvB4', points: 10, title: 'Krishna Leela 16', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
+  { id: 'v17', videoId: 'FWi2kkoLumk', points: 10, title: 'Krishna Leela 17', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
+  { id: 'v18', videoId: 'po8a5tDQkaM', points: 10, title: 'Krishna Leela 18', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
+  { id: 'v19', videoId: 'j5gUr6O1i4o', points: 10, title: 'Krishna Leela 19', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
+
 ]
 
 // ─── GAME STRUCTURE ──────────────────────────────────────────────────────────
