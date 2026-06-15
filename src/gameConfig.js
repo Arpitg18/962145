@@ -111,8 +111,8 @@ export const ROUND1_VIDEOS = [
         correct: 2,
       },
       {
-        q: 'What did Krishna do when the old woman stopped remembering Him?',
-        options: ['He got angry and punished her.', 'He appeared right in front of her and asked her to start praying and serving Him again.', 'He ignored her and went to another devotee.', 'He sent her a letter through a messenger.'],
+        q: 'What did Krishna do when the old woman stopped remembering him?',
+        options: ['He got angry and punished her.', 'He appeared right in front of her and asked her to start praying and serving him again.', 'He ignored her and went to another devotee.', 'He sent her a letter through a messenger.'],
         correct: 1,
       },
       {
@@ -144,24 +144,39 @@ export const ROUND1_VIDEOS = [
     ],
   },
   {
-    id: 'v05', videoId: 'qin-Oqga9gY', points: 10,
-    title: 'Shyam Kund & Radha Kund — The Divine Ponds',
+    id: 'v05', videoId: '5DMgv1w05d0', points: 10,
+    title: 'How Jagannath Calmed Angry Lakshmi',
     questions: [
-      {
-        q: 'On which specific occasion does bathing in Radha Kund grant the highest spiritual merit?',
-        options: ['Janmashtami midnight', 'Kartik Purnima (full moon of Kartik)', 'Ashtami of Kartik — the 8th day after Diwali', 'Ekadashi — the 11th day of the lunar fortnight'],
-        correct: 2,
-      },
-      {
-        q: 'Radha Kund and Shyam Kund are sacred ponds associated with which divine couple?',
-        options: ['Shiva and Parvati', 'Ram and Sita', 'Krishna and Radha', 'Vishnu and Lakshmi'],
-        correct: 2,
-      },
-      {
-        q: 'Near which famous holy hill are Radha Kund and Shyam Kund located?',
-        options: ['The Himalayas', 'Govardhan Hill (near Mathura)', 'Vindhya Mountains', 'Kailash Parvat'],
-        correct: 1,
-      },
+        { 
+    q: 'Why did Goddess Lakshmi get angry with Lord Jagannath during the Rath Yatra festival?', 
+    options: [
+      'Because He forgot her birthday.', 
+      'Because He went on a vacation to the Gundicha temple with His siblings and left her behind.', 
+      'Because He did not like the food she cooked.', 
+      'Because He lost the palace keys.'
+    ], 
+    correct: 1 
+  },
+  { 
+    q: 'What does Goddess Lakshmi do at the Gundicha temple to show her anger when Lord Jagannath stays away too long?', 
+    options: [
+      'She breaks a portion of Lord Jagannath\'s chariot (Nandighosha).', 
+      'She locks up all the food in the temple kitchen.', 
+      'She goes back to her parents\' house forever.', 
+      'She creates a massive storm in the city.'
+    ], 
+    correct: 0 
+  },
+  { 
+    q: 'When Lord Jagannath finally returns to the main temple, how does He calm Goddess Lakshmi down and get her to open the locked gates?', 
+    options: [
+      'He commands her to open the door because He is the king.', 
+      'He promises to never go out of the palace again.', 
+      'He sweet-talks her, apologizes, and offers her a special Rasgulla sweet to melt her heart.', 
+      'He asks the village elders to scold her.'
+    ], 
+    correct: 2 
+  },
     ],
   },
   {
@@ -222,34 +237,49 @@ export const ROUND1_VIDEOS = [
       },
       {
         q: 'After Krishna held Govardhan for 7 days and Indra\'s rage subsided, what did Indra do?',
-        options: ['He launched another attack with more powerful storms', 'He declared eternal war against Krishna', 'He descended to earth, humbly apologised to Krishna and worshipped him with Surabhi the divine cow', 'He retreated silently, vowing never to return'],
+        options: ['He launched another attack with more powerful storms', 'He declared eternal war against Krishna', 'He descended to earth, humbly apologised to Krishna', 'He retreated silently, vowing never to return'],
         correct: 2,
       },
     ],
   },
   {
     id: 'v09', videoId: 'm6Y5CYeagFw', points: 10,
-    title: 'Why Was Sudama Poor & Krishna a King?',
+    title: 'The Divine Journey of Shrinathji',
     questions: [
-      {
-        q: 'This video reveals the "secret sacrifice" behind Sudama\'s poverty. What did his lifelong poverty ultimately demonstrate?',
-        options: ['God always punishes dishonesty, even small acts', 'Material wealth is irrelevant — Sudama\'s true treasure was his unbreakable love for Krishna', 'A brahmin\'s duty is always to remain poor', 'Krishna deliberately kept Sudama poor to test his loyalty'],
-        correct: 1,
-      },
-      {
-        q: 'After Sudama returned from Dwarka having received nothing obvious in return, what did he find at home?',
-        options: ['His family had moved away, thinking he had abandoned them', 'His poor hut had transformed into a magnificent palace overflowing with wealth and happiness', 'A sealed letter from Krishna had arrived with instructions', 'Everything was exactly as he had left it — nothing had changed'],
-        correct: 1,
-      },
-      {
-        q: 'What humble gift did poor Sudama carry all the way to Dwarka for Krishna?',
-        options: ['A bag of gold coins saved over many years', 'A handwoven shawl made lovingly by his wife', 'A small bundle of flattened rice (poha / chivda) wrapped in a torn piece of cloth', 'Fresh lotus flowers picked from the Yamuna river'],
-        correct: 2,
-      },
+      { 
+    q: 'Why did the priests and devotees secretly put the sacred idol of Shrinathji in a chariot and leave Govardhan Hill?', 
+    options: [
+      'They wanted to find a bigger temple with a larger kitchen.', 
+      'The Mughal Emperor Aurangzeb had ordered the destruction of Hindu temples, and they needed to keep the idol safe from his army.', 
+      'They were invited to a grand festival in South India.', 
+      'The weather at Govardhan Hill became too cold for the deity.'
+    ], 
+    correct: 1 
+  },
+  { 
+    q: 'During the dangerous journey, how did Shrinathji miraculously protect his devotees when Aurangzeb’s army came close to them at the Chambal river?', 
+    options: [
+      'He made a massive wall of fire appear between them.', 
+      'He made the simple wooden chariot look like a huge, scary mountain from a distance, making the enemy army run away in fear.', 
+      'He made the river turn into solid ice so everyone could cross safely.', 
+      'He gave the devotees magical swords to fight the soldiers'
+    ], 
+    correct: 1 
+  },
+  { 
+    q: 'How did the devotees realize that Shrinathji wanted to stop his journey and live permanently in the village of Sihad (now called Nathdwara)?', 
+    options: [
+      'A voice from the sky told them to stop walking.', 
+      'The wheels of the heavy chariot sank deep into the mud and would not move a single inch.', 
+      'The local villagers refused to let the chariot pass through their roads.', 
+      'The idol suddenly became too heavy for anyone to lift.'
+    ], 
+    correct: 1 
+  },
     ],
   },
   {
-    id: 'v10', videoId: 'mUxTv7hTD2c', points: 10,
+    id: 'v10', videoId: 'Vv-l6XaosVc', points: 10,
     title: 'Krishna & Sudama — A Beautiful Friendship',
     questions: [
       {
@@ -270,16 +300,197 @@ export const ROUND1_VIDEOS = [
     ],
   },
   // ── PENDING: 8 more videos (v11–v18) — add links and 3 questions each ──────
-  { id: 'v11', videoId: 'Wox7-N3MYKg',playlistId: 'RDWox7-N3MYKg', points: 10, title: 'Krishna Leela 11', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v12', videoId: 'Feoea8FQTI0',playlistId: 'RDFeoea8FQTI0', points: 10, title: 'Krishna Leela 12', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v13', videoId: '3YLog5mrAYM',playlistId: 'RD3YLog5mrAYM', points: 10, title: 'Krishna Leela 13', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v14', videoId: 'GIFgAcZcEFQ',playlistId: 'RDGIFgAcZcEFQ', points: 10, title: 'Krishna Leela 14', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v15', videoId: 'g883CDeZtBA',playlistId: 'RDg883CDeZtBA', points: 10, title: 'Krishna Leela 15', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v16', videoId: 'LqrgTZWTvB4',playlistId: 'RDLqrgTZWTvB4', points: 10, title: 'Krishna Leela 16', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v17', videoId: 'FWi2kkoLumk', points: 10, title: 'Krishna Leela 17', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v18', videoId: 'po8a5tDQkaM', points: 10, title: 'Krishna Leela 18', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-  { id: 'v19', videoId: 'j5gUr6O1i4o', points: 10, title: 'Krishna Leela 19', questions: [{ q: 'Q1 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q2 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }, { q: 'Q3 — to be added', options: ['A', 'B', 'C', 'D'], correct: 0 }] },
-
+  { 
+    id: 'v11', 
+    videoId: 'Wox7-N3MYKg', 
+    playlistId: 'RDWox7-N3MYKg', 
+    points: 10, 
+    title: 'Achyutam Keshavam Krishna Damodaram', 
+    questions: [
+      { q: 'The song asks, "Who says God does not dance?" Whose dancing love does the bhajan remind us of?', options: [   'The kings in the palace.', 
+    'The birds in the forest during the rainy season.', 
+    'The Gopis (devotees) who danced out of pure love for Krishna in Vrindavan.', 
+    'The court dancers of a great empire.'], 
+       correct: 2 },
+      { q: 'What does the name "Damodara" signify in Krishna\'s childhood?', options: ['One tied with a rope around the waist', 'The holder of the flute', 'The slayer of Kamsa', 'The protector of cows'], 
+       correct: 0 },
+      { q: 'What is the main message that this entire bhajan teaches us about God?', 
+         options: [
+    'God is very far away and only appears after hundreds of years of difficult rituals.', 
+    'God is easily reachable and present everywhere; you just need to call Him with true love, like a child calling a mother.', 
+    'We should only sing bhajans when we are inside a temple.', 
+    'God only listens to people who can sing perfectly.'
+  ], 
+       correct: 1 }
+    ] 
+  },
+  { 
+    id: 'v12', 
+    videoId: 'Feoea8FQTI0', 
+    playlistId: 'RDFeoea8FQTI0', 
+    points: 10, 
+    title: 'Tum Prem Ho - RadhaKrishn', 
+    questions: [
+      { 
+    q: 'According to the lyrics of the song, what is the relationship between love (Prem) and Radha-Krishna?', 
+    options: [
+      'Love is just a minor part of their story.', 
+      'Radha and Krishna are the very form of love, and love itself is their identity.', 
+      'They only learned what love means after many years.', 
+      'Their love is exactly like ordinary human attachment.'
+    ], 
+    correct: 1 
+  },
+  { 
+    q: 'The song mentions "Tum Ho Mera Prem" (You are my love). What does this teach us about true love?', 
+    options: [
+      'True love is selfish and demands things from the other person.', 
+      'True love is about capturing someone and keeping them close.', 
+      'True love is pure, selfless, and connects two souls as one, without any expectations.', 
+      'True love changes every day based on the situation.'
+    ], 
+    correct: 2 
+  },
+  { 
+    q: 'What is the main spiritual lesson we get from listening to "Tum Prem Ho"?', 
+    options: [
+      'God can only be understood through fear and strict laws.', 
+      'The highest way to reach and experience God is through the path of pure, divine love.', 
+      'Love is a distraction from doing spiritual prayers.', 
+      'Radha and Krishna lived separate lives with separate minds.'
+    ], 
+    correct: 1 
+  }
+    ] 
+  },
+  { 
+    id: 'v13', 
+    videoId: '3YLog5mrAYM', 
+    playlistId: 'RD3YLog5mrAYM', 
+    points: 10, 
+    title: 'O Kanha Ab To Murli Ki Dhun Sunaye', 
+    questions: [
+ { 
+    q: 'What are the devotees begging Krishna (Kanha) to do in this song?', 
+    options: [
+      'To bring them expensive gifts from the city.', 
+      'To play His flute (Murli) just once so they can find peace.', 
+      'To fight a battle and protect their village.', 
+      'To teach them how to play the flute themselves.'
+    ], 
+    correct: 1 
+  },
+  { 
+    q: 'The lyrics mention that without hearing Krishna\'s flute, the eyes of the devotees have become like "streams of water." What does this mean?', 
+    options: [
+      'They are enjoying the rainy season.', 
+      'They have gone to wash their faces in the river.', 
+      'They are crying continuously because they miss him so much.', 
+      'They are looking for water in the desert.'
+    ], 
+    correct: 2 
+  },
+  { 
+    q: 'What kind of devotion (Bhakti) does this bhajan show?', 
+    options: [
+      'It shows Viraha Bhakti—the deep, pure love that grows even stronger when a devotee feels separated from God.', 
+      'It shows that people only pray to God when they want to listen to music.', 
+      'It shows that the devotees forgot about Krishna as soon as He left.', 
+      'It shows that strict temple rules are the only way to please God.'
+    ], 
+    correct: 0 
+  }    ] 
+  },
+  { 
+    id: 'v14', 
+    videoId: 'GIFgAcZcEFQ', 
+    playlistId: 'RDGIFgAcZcEFQ', 
+    points: 10, 
+    title: 'Mann Mandir Mein Saje Bihari', 
+    questions: [
+      { q: 'What does the word "Mann Mandir" mean?', options: ['The temple of the mind/heart', 'A physical stone temple', 'A royal palace', 'A forest shrine'], correct: 0 },
+      { q: 'Which form of Lord Krishna is referred to as "Bihari" or "Banke Bihari"?', options: ['The charming, bent-posture form worshipped in Vrindavan', 'The warrior king of Dwarka', 'The universal cosmic form', 'The newborn baby form'], correct: 0 },
+      { q: 'What does dedicating your "Mann Mandir" to Krishna symbolize?', options: ['Internal devotion and pure thoughts', 'Building an external monument', 'Leaving your family life', 'Performing complex rituals'], correct: 0 }
+    ] 
+  },
+  { 
+    id: 'v15', 
+    videoId: 'g883CDeZtBA', 
+    playlistId: 'RDg883CDeZtBA', 
+    points: 10, 
+    title: 'Shri Krishna Govinda Hare Murari', 
+    questions: [
+      { q: 'Which demon did Krishna slay to earn the name "Murari"?', options: ['Mura', 'Kamsa', 'Ravana', 'Putana'], correct: 0 },
+      { q: 'Who are addressed as the divine parents in the continuation "Hey Natha Narayana Vasudeva"?', options: ['The Supreme Divine Lord as guardian', 'King Dasharatha and Kausalya', 'Lord Shiva and Parvati', 'King Janaka and Sunayana'], correct: 0 },
+      { q: 'What is the primary spiritual goal of chanting "Shri Krishna Govinda"?', options: ['Peace, joy, and remembrance of the Divine', 'Acquiring worldly wealth', 'Defeating political enemies', 'Learning ancient grammar'], correct: 0 }
+    ] 
+  },
+  { 
+    id: 'v16', 
+    videoId: 'LqrgTZWTvB4', 
+    playlistId: 'RDLqrgTZWTvB4', 
+    points: 10, 
+    title: 'Names Of Lord Krishna To Remove Negativity', 
+    questions: [
+      { q: 'How many divine names of Krishna are featured in this specific chant tradition?', options: ['12', '24', '108', '1000'], 
+       correct: 1 },
+      { q: 'What is the intended spiritual benefit of chanting these 24 names?', options: ['Removing negativity and purifying the mind', 'Predicting the future', 'Gaining physical speed', 'Learning dynamic combat'], 
+       correct: 0 },
+      { q: 'Which of the following is a prominent name included among Krishna\'s sacred titles?', options: ['Keshav', 'Indra', 'Agni', 'Varuna'], 
+       correct: 0 }
+    ] 
+  },
+  { 
+    id: 'v17', 
+    videoId: 'FWi2kkoLumk', 
+    points: 10, 
+    title: 'Krishna\'s Many Names & Meanings', 
+    questions: [
+      { q: 'Why does Lord Krishna have so many different names in Hindu tradition?', options: ['Each name reflects a unique attribute, pastime, or divine quality', 'Because he forgot his original name', 'To hide from his enemies', 'Because he ruled many different modern countries'], correct: 0 },
+      { q: 'What does the name "Gopal" literally mean?', options: ['Protector or cowherd of cows', 'Slayer of demons', 'King of kings', 'The quiet one'], correct: 0 },
+      { q: 'Which name relates to Krishna lifting a mountain to save Vrindavan?', options: ['Giridhari', 'Madhav', 'Janardan', 'Mukunda'], correct: 0 }
+    ] 
+  },
+  { 
+    id: 'v18', 
+    videoId: 'po8a5tDQkaM', 
+    points: 10, 
+    title: 'Guruvayur Sree Krishna Temple Devotion', 
+    questions: [
+      { q: 'In which Indian state is the famous Guruvayur Sree Krishna Temple located?', options: ['Kerala', 'Tamil Nadu', 'Karnataka', 'Maharashtra'], correct: 0 },
+        { 
+    q: 'From which ancient, holy city was the sacred statue (idol) brought before it arrived in Kerala?', 
+    options: [
+      'Ayodhya', 
+      'Mathura', 
+      'Dwaraka', 
+      'Varanasi'
+    ], 
+    correct: 2 
+  },
+  { 
+    q: 'Why is the sacred place in Kerala named "Guruvayur"?', 
+    options: [
+      'It was named after a famous king who built the temple walls.', 
+      'It is named after Guru (Brihaspati, the teacher of the gods) and Vayu (the Wind God), who rescued and installed the statue together.', 
+      'It translates to "The land of beautiful peacocks" in the local language.', 
+      'It was named by the local villagers because it means "The sweet house of Krishna."'
+    ], 
+    correct: 1 
+  }
+    ] 
+  },
+  { 
+    id: 'v19', 
+    videoId: 'j5gUr6O1i4o', 
+    points: 10, 
+    title: 'What Does the Name Krishna Mean?', 
+    questions: [
+      { q: 'What is the literal Sanskrit meaning of the word "Krishna"?', options: ['The Dark, All-Attractive One', 'The Silent Warrior', 'The Lord of Light', 'The First Born'], correct: 0 },
+      { q: 'According to the Mahabharata, who else shares the name "Krishna" besides Vasudeva Krishna?', options: ['Draupadi and Veda Vyasa', 'Arjuna and Bhima', 'Yudhishthira and Karna', 'Kamsa and Shishupala'], correct: 0 },
+      { q: 'According to the video, what does the first part of the name,"Krish",mean?', options: ['Dark skin color', 'Supreme person or existence', 'Playing a musical instrument', 'Running fast'], correct: 1 }
+    ] 
+  }
 ]
 
 // ─── GAME STRUCTURE ──────────────────────────────────────────────────────────
