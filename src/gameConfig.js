@@ -7,6 +7,7 @@ export const PARTICIPANTS = [
   { id: 'p04', name: 'Girdhari', groupId: 'G1' },
   { id: 'p05', name: 'Aarti',    groupId: 'G1' },
   { id: 'p06', name: 'Ratika',   groupId: 'G1' },
+  { id: 'p18', name: 'Reena',   groupId: 'G1' },  
   // ── Team 2: MAKHAN CHORS ────────────────────────────────────────────────
   { id: 'p07', name: 'Poonam',  groupId: 'G2' },
   { id: 'p08', name: 'Shreya',  groupId: 'G2' },
@@ -20,7 +21,7 @@ export const PARTICIPANTS = [
   { id: 'p15', name: 'Twinkle',  groupId: 'G3' },
   { id: 'p16', name: 'Richa',    groupId: 'G3' },
   { id: 'p17', name: 'Anju',     groupId: 'G3' },
-  { id: 'p18', name: 'Reena',    groupId: 'G3' },
+  { id: 'p38', name: 'Pankaj',    groupId: 'G3' },
   // ── Team 4: GOVARDHAN ───────────────────────────────────────────────────
   { id: 'p19', name: 'Arpit',    groupId: 'G4' },
   { id: 'p20', name: 'Sangeeta', groupId: 'G4' },
@@ -34,7 +35,7 @@ export const PARTICIPANTS = [
   { id: 'p27', name: 'Tanupam', groupId: 'G5' },
   { id: 'p28', name: 'Sarita',  groupId: 'G5' },
   { id: 'p29', name: 'Sonia',   groupId: 'G5' },
-  { id: 'p30', name: 'Manju',   groupId: 'G5' },
+  { id: 'p30', name: 'Garima',   groupId: 'G5' },
   // ── Team 6: RADHA RAMAN — 7 members ────────────────────────────────────
   { id: 'p31', name: 'Chandrika', groupId: 'G6' },
   { id: 'p32', name: 'Sanchit',  groupId: 'G6' },
