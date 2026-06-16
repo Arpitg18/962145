@@ -139,7 +139,7 @@ export const ROUND1_VIDEOS = [
       },
       {
         q: "What does Lord Jagannath's love for the old lady's Khichdi teach us?",
-        options: ['God prefers complex temple rituals over a devotee's personal love.', 'You should only offer food to God if you are an expert cook.', 'Pure love and feeding God with a caring heart are much more important than rigid rituals and external rules.', 'People should never eat Khichdi in the morning.'],
+        options: ["God prefers complex temple rituals over a devotee's personal love.", 'You should only offer food to God if you are an expert cook.', 'Pure love and feeding God with a caring heart are much more important than rigid rituals and external rules.', 'People should never eat Khichdi in the morning.'],
         correct: 2,
       },
     ],
